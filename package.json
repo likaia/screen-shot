@@ -1,5 +1,5 @@
 {
-  "name": "screen-shot",
+  "name": "web-screen-shot",
   "version": "1.0.0",
   "description": "web端自定义截屏插件",
   "private": false,
@@ -17,7 +17,7 @@
   },
   "keywords": [
     "vue-screen-shot",
-    "screen-shot",
+    "web-screen-shot",
     "截屏",
     "截图",
     "屏幕截图",
