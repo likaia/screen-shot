@@ -1,13 +1,13 @@
-# web-screen-shot · [![npm](https://img.shields.io/badge/npm-v1.0.0-2081C1)](https://www.npmjs.com/package/web-screen-shot) [![yarn](https://img.shields.io/badge/yarn-v1.0.0-F37E42)](https://yarnpkg.com/package/web-screen-shot) [![github](https://img.shields.io/badge/GitHub-depositary-9A9A9A)](https://github.com/likaia/screen-shot) [![](https://img.shields.io/github/issues/likaia/web-screen-shot)](https://github.com/likaia/screen-shot/issues) [![](	https://img.shields.io/github/forks/likaia/web-screen-shot)](https://github.com/likaia/screen-shot/network/members) [![](	https://img.shields.io/github/stars/likaia/web-screen-shot)](https://github.com/likaia/screen-shot/stargazers)
+# vue-web-screen-shot · [![npm](https://img.shields.io/badge/npm-v1.0.1-2081C1)](https://www.npmjs.com/package/vue-web-screen-shot) [![yarn](https://img.shields.io/badge/yarn-v1.0.1-F37E42)](https://yarnpkg.com/package/vue-web-screen-shot) [![github](https://img.shields.io/badge/GitHub-depositary-9A9A9A)](https://github.com/likaia/screen-shot) [![](https://img.shields.io/github/issues/likaia/web-screen-shot)](https://github.com/likaia/screen-shot/issues) [![](	https://img.shields.io/github/forks/likaia/web-screen-shot)](https://github.com/likaia/screen-shot/network/members) [![](	https://img.shields.io/github/stars/likaia/web-screen-shot)](https://github.com/likaia/screen-shot/stargazers)
 web端自定义截屏插件，运行视频：[实现web端自定义截屏功能](https://www.bilibili.com/video/BV1Ey4y127cV) ,效果图如下：![截屏效果图](result.jpg)
 
 ## 插件安装
 ```bash
-yarn add web-screen-shot
+yarn add vue-web-screen-shot
 
 # or
 
-npm install web-screen-shot --save
+npm install vue-web-screen-shot --save
 ```
 
 ## 插件使用
@@ -15,7 +15,7 @@ npm install web-screen-shot --save
 * 在项目的入口文件`main.ts/main.js`中加入下述代码
 ```javascript
 // 导入截屏插件
-import screenShort from "web-screen-shot";
+import screenShort from "vue-web-screen-shot";
 const app = createApp(App);
 // 使用截屏插件
 app.use(screenShort)
