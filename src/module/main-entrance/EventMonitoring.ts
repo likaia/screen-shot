@@ -600,7 +600,7 @@ export default class EventMonitoring {
       const controller = this.screenShortController.value;
       if (this.history.length > this.maxUndoNum) {
         // 删除最早的一条画布记录
-        this.history.unshift();
+        this.history.shift();
       }
       // 保存当前画布状态
       this.history.push({
