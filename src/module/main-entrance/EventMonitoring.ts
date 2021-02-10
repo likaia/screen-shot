@@ -13,7 +13,6 @@ import { zoomCutOutBoxPosition } from "@/module/common-methords/ZoomCutOutBoxPos
 import { saveBorderArrInfo } from "@/module/common-methords/SaveBorderArrInfo";
 import { drawCutOutBox } from "@/module/split-methods/DrawCutOutBox";
 import InitData from "@/module/main-entrance/InitData";
-import html2canvas from "html2canvas";
 import { calculateToolLocation } from "@/module/split-methods/CalculateToolLocation";
 import { drawRectangle } from "@/module/split-methods/DrawRectangle";
 import { drawCircle } from "@/module/split-methods/DrawCircle";
@@ -36,14 +35,16 @@ export default class EventMonitoring {
   // 截图工具栏dom
   private toolController: Ref<HTMLDivElement | null>;
   // 截图图片存放容器
-  private screenShortImageController: HTMLCanvasElement | undefined;
+  private readonly screenShortImageController: HTMLCanvasElement | null;
   // 截图区域画布
   private screenShortCanvas: CanvasRenderingContext2D | undefined;
   // 文本区域dom
   private textInputController: Ref<HTMLDivElement | null> | undefined;
-  //  截图工具栏画笔选项dom
+  // 截图工具栏画笔选项dom
   private optionController: Ref<HTMLDivElement | null> | undefined;
   private optionIcoController: Ref<HTMLDivElement | null> | undefined;
+  // video容器用于存放屏幕MediaStream流
+  private readonly videoController: HTMLVideoElement;
   // 图形位置参数
   private drawGraphPosition: positionInfoType = {
     startX: 0,
@@ -103,6 +104,9 @@ export default class EventMonitoring {
     this.textInputController = this.data.getTextInputController();
     this.optionController = this.data.getOptionController();
     this.optionIcoController = this.data.getOptionIcoController();
+    this.videoController = document.createElement("video");
+    this.videoController.autoplay = true;
+    this.screenShortImageController = document.createElement("canvas");
     // 设置实例与属性
     this.data.setPropsData(context.emit);
 
@@ -110,35 +114,51 @@ export default class EventMonitoring {
       this.emit = this.data.getEmit();
       // 设置截图区域canvas宽高
       this.data.setScreenShortInfo(window.innerWidth, window.innerHeight);
-      // 截取整个网页，allowTaint: true可解决截图后跨域导致的图片不显示问题，但是会影响截图的主体功能
-      html2canvas(document.body, {}).then(canvas => {
-        // 装载截图的dom为null则退出
-        if (this.screenShortController.value == null) return;
+      if (this.screenShortImageController == null) return;
+      // 设置截图图片存放容器宽高
+      this.screenShortImageController.width = window.innerWidth;
+      this.screenShortImageController.height = window.innerHeight;
+      // 开始捕捉屏幕
+      this.startCapture().then(() => {
+        setTimeout(() => {
+          // 装载截图的dom为null则退出
+          if (this.screenShortController.value == null) return;
+          if (this.screenShortImageController == null) return;
+          const imageContext = this.screenShortImageController.getContext("2d");
+          if (imageContext == null) return;
+          // 将获取到的屏幕截图绘制到图片容器里
+          imageContext.drawImage(
+            this.videoController,
+            0,
+            0,
+            this.screenShortImageController.width,
+            this.screenShortImageController.height
+          );
+          // 获取截图区域画canvas容器画布
+          const context = this.screenShortController.value?.getContext("2d");
+          if (context == null) return;
 
-        // 存放html2canvas截取的内容
-        this.screenShortImageController = canvas;
-        // 获取截图区域画canvas容器画布
-        const context = this.screenShortController.value?.getContext("2d");
-        if (context == null) return;
+          // 赋值截图区域canvas画布
+          this.screenShortCanvas = context;
+          // 绘制蒙层
+          drawMasking(context);
 
-        // 赋值截图区域canvas画布
-        this.screenShortCanvas = context;
-        // 绘制蒙层
-        drawMasking(context);
-
-        // 添加监听
-        this.screenShortController.value?.addEventListener(
-          "mousedown",
-          this.mouseDownEvent
-        );
-        this.screenShortController.value?.addEventListener(
-          "mousemove",
-          this.mouseMoveEvent
-        );
-        this.screenShortController.value?.addEventListener(
-          "mouseup",
-          this.mouseUpEvent
-        );
+          // 添加监听
+          this.screenShortController.value?.addEventListener(
+            "mousedown",
+            this.mouseDownEvent
+          );
+          this.screenShortController.value?.addEventListener(
+            "mousemove",
+            this.mouseMoveEvent
+          );
+          this.screenShortController.value?.addEventListener(
+            "mouseup",
+            this.mouseUpEvent
+          );
+          // 停止捕捉屏幕
+          this.stopCapture();
+        }, 300);
       });
     });
 
@@ -147,6 +167,33 @@ export default class EventMonitoring {
       this.data.setInitStatus(true);
     });
   }
+
+  // 开始捕捉屏幕
+  private startCapture = async () => {
+    let captureStream = null;
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      // @ts-ignore
+      // 捕获屏幕
+      captureStream = await navigator.mediaDevices.getDisplayMedia();
+      // 将MediaStream输出至video标签
+      this.videoController.srcObject = captureStream;
+    } catch (err) {
+      throw "浏览器不支持webrtc" + err;
+    }
+    return captureStream;
+  };
+
+  // 停止捕捉屏幕
+  private stopCapture = () => {
+    const srcObject = this.videoController.srcObject;
+    if (srcObject && "getTracks" in srcObject) {
+      const tracks = srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      this.videoController.srcObject = null;
+    }
+  };
 
   // 鼠标按下事件
   private mouseDownEvent = (event: MouseEvent) => {

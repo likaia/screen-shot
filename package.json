@@ -1,6 +1,6 @@
 {
   "name": "vue-web-screen-shot",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "web端自定义截屏插件(Vue3版)",
   "private": false,
   "main": "dist/screenShotPlugin.common.js",
@@ -31,8 +31,7 @@
   },
   "homepage": "https://github.com/likaia/screen-shot#readme",
   "dependencies": {
-    "@types/lodash": "^4.14.161",
-    "html2canvas": "^1.0.0-rc.7"
+    "@types/lodash": "^4.14.161"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
