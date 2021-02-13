@@ -31,7 +31,8 @@
   },
   "homepage": "https://github.com/likaia/screen-shot#readme",
   "dependencies": {
-    "@types/lodash": "^4.14.161"
+    "@types/lodash": "^4.14.161",
+    "webrtc-adapter": "^7.7.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",

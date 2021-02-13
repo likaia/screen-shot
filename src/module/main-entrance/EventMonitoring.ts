@@ -24,6 +24,7 @@ import { saveCanvasToBase64 } from "@/module/common-methords/SaveCanvasToBase64"
 import { drawMosaic } from "@/module/split-methods/DrawMosaic";
 import { calculateOptionIcoPosition } from "@/module/split-methods/CalculateOptionIcoPosition";
 import { setSelectedClassName } from "@/module/common-methords/SetSelectedClassName";
+import adapter from "webrtc-adapter";
 
 export default class EventMonitoring {
   // 当前实例的响应式data数据
@@ -180,7 +181,13 @@ export default class EventMonitoring {
       // 将MediaStream输出至video标签
       this.videoController.srcObject = captureStream;
     } catch (err) {
-      throw "浏览器不支持webrtc" + err;
+      // 销毁组件
+      this.resetComponent();
+      throw "浏览器不支持webrtc或者用户未授权, 浏览器名称" +
+        adapter.browserDetails.browser +
+        "，浏览器版本号" +
+        adapter.browserDetails.version +
+        err;
     }
     return captureStream;
   };
