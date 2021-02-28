@@ -733,8 +733,8 @@ export default class EventMonitoring {
         // 将canvas转为图片
         saveCanvasToImage(
           this.screenShortCanvas,
-          startX + this.borderSize / 2.4,
-          startY + this.borderSize / 2.4,
+          startX + this.borderSize / 2.0,
+          startY + this.borderSize / 2.0,
           width - this.borderSize * 2.4,
           height - this.borderSize * 2.4
         );
@@ -742,8 +742,8 @@ export default class EventMonitoring {
         // 将canvas转为base64
         base64 = saveCanvasToBase64(
           this.screenShortCanvas,
-          startX + this.borderSize / 2.4,
-          startY + this.borderSize / 2.4,
+          startX + this.borderSize / 2.0,
+          startY + this.borderSize / 2.0,
           width - this.borderSize * 2.4,
           height - this.borderSize * 2.4
         );
