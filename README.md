@@ -1,4 +1,4 @@
-# vue-web-screen-shot · [![npm](https://img.shields.io/badge/npm-v1.1.6-2081C1)](https://www.npmjs.com/package/vue-web-screen-shot) [![yarn](https://img.shields.io/badge/yarn-v1.1.6-F37E42)](https://yarnpkg.com/package/vue-web-screen-shot) [![github](https://img.shields.io/badge/GitHub-depositary-9A9A9A)](https://github.com/likaia/screen-shot) [![](https://img.shields.io/github/issues/likaia/screen-shot)](https://github.com/likaia/screen-shot/issues) [![](	https://img.shields.io/github/forks/likaia/screen-shot)](https://github.com/likaia/screen-shot/network/members) [![](	https://img.shields.io/github/stars/likaia/screen-shot)](https://github.com/likaia/screen-shot/stargazers)
+# vue-web-screen-shot · [![npm](https://img.shields.io/badge/npm-v1.1.7-2081C1)](https://www.npmjs.com/package/vue-web-screen-shot) [![yarn](https://img.shields.io/badge/yarn-v1.1.7-F37E42)](https://yarnpkg.com/package/vue-web-screen-shot) [![github](https://img.shields.io/badge/GitHub-depositary-9A9A9A)](https://github.com/likaia/screen-shot) [![](https://img.shields.io/github/issues/likaia/screen-shot)](https://github.com/likaia/screen-shot/issues) [![](	https://img.shields.io/github/forks/likaia/screen-shot)](https://github.com/likaia/screen-shot/network/members) [![](	https://img.shields.io/github/stars/likaia/screen-shot)](https://github.com/likaia/screen-shot/stargazers)
 web端自定义截屏插件(Vue3版)，运行视频：[实现web端自定义截屏功能](https://www.bilibili.com/video/BV1Ey4y127cV) , 本插件仅支持Vue3,如需在其他平台使用请移步 ：[js-web-screen-shot](https://www.npmjs.com/package/js-web-screen-shot) 效果图如下：
 ![截屏效果图](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/486d810877a24582aa8cf110e643c138~tplv-k3u1fbpfcp-watermark.image)
 
@@ -20,7 +20,7 @@ npm install vue-web-screen-shot --save
 import screenShort from "vue-web-screen-shot";
 const app = createApp(App);
 // 使用截屏插件
-app.use(screenShort)
+app.use(screenShort, { enableWebRtc: false })
 ```
 * 在你的需要使用的业务代码中，添加下述代码
 ```vue
@@ -62,6 +62,7 @@ export default defineComponent({
 * screenshotStatus 用于控制组件是否出现在dom中
 * @destroy-component 用于接收截图组件传递的销毁消息，我们需要在对应的函数中销毁截图组件
 * @get-image-data 用于接收截图组件传递的框选区域的base64图片信息，我们需要为他提供一个函数来接收截图组件传递的消息
+* 使用插件时，`{ enableWebRtc: false }`为可选参数，设为`true`插件将使用`webrtc`来截屏，否则使用`html2canvas`来截屏。
 
 ## 写在最后
 至此，插件的所有使用方法就介绍完了。

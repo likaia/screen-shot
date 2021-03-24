@@ -8,6 +8,8 @@ import {
   positionInfoType
 } from "@/module/type/ComponentType.ts";
 import { drawMasking } from "@/module/split-methods/DrawMasking";
+import html2canvas from "html2canvas";
+import PlugInParameters from "@/module/main-entrance/PlugInParameters";
 import { fixedData, nonNegativeData } from "@/module/common-methords/FixedData";
 import { zoomCutOutBoxPosition } from "@/module/common-methords/ZoomCutOutBoxPosition";
 import { saveBorderArrInfo } from "@/module/common-methords/SaveBorderArrInfo";
@@ -36,7 +38,7 @@ export default class EventMonitoring {
   // 截图工具栏dom
   private toolController: Ref<HTMLDivElement | null>;
   // 截图图片存放容器
-  private readonly screenShortImageController: HTMLCanvasElement | null;
+  private screenShortImageController: HTMLCanvasElement | null;
   // 截图区域画布
   private screenShortCanvas: CanvasRenderingContext2D | undefined;
   // 文本区域dom
@@ -113,12 +115,46 @@ export default class EventMonitoring {
 
     onMounted(() => {
       this.emit = this.data.getEmit();
+      const plugInParameters = new PlugInParameters();
       // 设置截图区域canvas宽高
       this.data.setScreenShortInfo(window.innerWidth, window.innerHeight);
       if (this.screenShortImageController == null) return;
       // 设置截图图片存放容器宽高
       this.screenShortImageController.width = window.innerWidth;
       this.screenShortImageController.height = window.innerHeight;
+      // 获取截图区域画canvas容器画布
+      const context = this.screenShortController.value?.getContext("2d");
+      if (context == null) return;
+      if (!plugInParameters.getWebRtcStatus()) {
+        // html2canvas截屏
+        html2canvas(document.body, {}).then(canvas => {
+          // 装载截图的dom为null则退出
+          if (this.screenShortController.value == null) return;
+
+          // 存放html2canvas截取的内容
+          this.screenShortImageController = canvas;
+
+          // 赋值截图区域canvas画布
+          this.screenShortCanvas = context;
+          // 绘制蒙层
+          drawMasking(context);
+
+          // 添加监听
+          this.screenShortController.value?.addEventListener(
+            "mousedown",
+            this.mouseDownEvent
+          );
+          this.screenShortController.value?.addEventListener(
+            "mousemove",
+            this.mouseMoveEvent
+          );
+          this.screenShortController.value?.addEventListener(
+            "mouseup",
+            this.mouseUpEvent
+          );
+        });
+        return;
+      }
       // 开始捕捉屏幕
       this.startCapture().then(() => {
         setTimeout(() => {
@@ -135,9 +171,6 @@ export default class EventMonitoring {
             this.screenShortImageController.width,
             this.screenShortImageController.height
           );
-          // 获取截图区域画canvas容器画布
-          const context = this.screenShortController.value?.getContext("2d");
-          if (context == null) return;
 
           // 赋值截图区域canvas画布
           this.screenShortCanvas = context;
