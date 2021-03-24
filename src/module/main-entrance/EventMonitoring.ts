@@ -122,6 +122,13 @@ export default class EventMonitoring {
       // 设置截图图片存放容器宽高
       this.screenShortImageController.width = window.innerWidth;
       this.screenShortImageController.height = window.innerHeight;
+      if (plugInParameters.getWebRtcStatus()) {
+        // 设置为屏幕宽高
+        this.data.setScreenShortInfo(window.screen.width, window.screen.height);
+        // 设置为屏幕宽高
+        this.screenShortImageController.width = window.screen.width;
+        this.screenShortImageController.height = window.screen.height;
+      }
       // 获取截图区域画canvas容器画布
       const context = this.screenShortController.value?.getContext("2d");
       if (context == null) return;
