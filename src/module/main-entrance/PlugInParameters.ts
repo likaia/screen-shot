@@ -2,6 +2,7 @@ let enableWebRtc = true;
 
 // 数据初始化标识
 let initStatus = false;
+let level = 0;
 
 export default class PlugInParameters {
   constructor() {
@@ -10,6 +11,7 @@ export default class PlugInParameters {
       enableWebRtc = true;
       // 初始化完成设置其值为false
       initStatus = false;
+      level = 0;
     }
   }
 
@@ -31,5 +33,13 @@ export default class PlugInParameters {
   // 设置webrtc启用状态
   public setWebRtcStatus(status: boolean) {
     enableWebRtc = status;
+  }
+
+  public getLevel() {
+    return level;
+  }
+
+  public setLevel(val: number) {
+    level = val;
   }
 }

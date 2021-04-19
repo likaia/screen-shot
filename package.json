@@ -1,6 +1,6 @@
 {
   "name": "vue-web-screen-shot",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "web端自定义截屏插件(Vue3版)",
   "private": false,
   "main": "dist/screenShotPlugin.common.js",

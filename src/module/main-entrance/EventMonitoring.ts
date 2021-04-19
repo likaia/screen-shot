@@ -199,7 +199,10 @@ export default class EventMonitoring {
           );
           // 停止捕捉屏幕
           this.stopCapture();
-        }, 300);
+          // 调整截屏容器层级
+          this.screenShortController.value.style.zIndex =
+            plugInParameters.getLevel() + "";
+        }, 500);
       });
     });
 
