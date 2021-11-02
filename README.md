@@ -2,6 +2,11 @@
 web端自定义截屏插件(Vue3版)，运行视频：[实现web端自定义截屏功能](https://www.bilibili.com/video/BV1Ey4y127cV) , 本插件仅支持Vue3,如需在其他平台使用请移步 ：[js-web-screen-shot](https://www.npmjs.com/package/js-web-screen-shot) 效果图如下：
 ![截屏效果图](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/486d810877a24582aa8cf110e643c138~tplv-k3u1fbpfcp-watermark.image)
 
+## 写在前面
+关于此插件的更多介绍以及实现原理请移步：
+- [实现Web端自定义截屏](https://juejin.cn/post/6924368956950052877)
+- [实现Web端自定义截屏(JS版)](https://juejin.cn/post/6931901091445473293)
+
 ## 插件安装
 ```bash
 yarn add vue-web-screen-shot
