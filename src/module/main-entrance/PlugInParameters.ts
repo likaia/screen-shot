@@ -3,6 +3,8 @@ let enableWebRtc = true;
 // 数据初始化标识
 let initStatus = false;
 let level = 0;
+// 单击截取屏启用状态
+let clickCutFullScreen = false;
 
 export default class PlugInParameters {
   constructor() {
@@ -41,5 +43,13 @@ export default class PlugInParameters {
 
   public setLevel(val: number) {
     level = val;
+  }
+
+  public getClickCutFullScreenStatus() {
+    return clickCutFullScreen;
+  }
+
+  public serClickCutFullScreenStatus(value: boolean) {
+    clickCutFullScreen = value;
   }
 }

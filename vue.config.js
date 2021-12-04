@@ -1,6 +1,7 @@
 module.exports = {
   // 强制css内联，不然会导致样式失效问题
   css: { extract: false },
+  productionSourceMap: false,
   chainWebpack: config => {
     if (process.env.NODE_ENV === "production") {
       config.module.rule("ts").uses.delete("cache-loader");

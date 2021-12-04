@@ -27,6 +27,7 @@ import { drawMosaic } from "@/module/split-methods/DrawMosaic";
 import { calculateOptionIcoPosition } from "@/module/split-methods/CalculateOptionIcoPosition";
 import { setSelectedClassName } from "@/module/common-methords/SetSelectedClassName";
 import adapter from "webrtc-adapter";
+import { getDrawBoundaryStatus } from "@/module/split-methods/BoundaryJudgment";
 
 export default class EventMonitoring {
   // 当前实例的响应式data数据
@@ -82,6 +83,14 @@ export default class EventMonitoring {
 
   // 鼠标点击状态
   private clickFlag = false;
+  // 鼠标拖动状态
+  private dragFlag = false;
+  // 单击截取屏启用状态
+  private clickCutFullScreen = false;
+  // 上一个裁剪框坐标信息
+  private drawGraphPrevX = 0;
+  private drawGraphPrevY = 0;
+
   // 当前点击的工具栏条目
   private toolName = "";
   private fontSize = 17;
@@ -116,6 +125,8 @@ export default class EventMonitoring {
     onMounted(() => {
       this.emit = this.data.getEmit();
       const plugInParameters = new PlugInParameters();
+      // 单击截屏启用状态
+      this.clickCutFullScreen = plugInParameters.getClickCutFullScreenStatus();
       // 设置截图区域canvas宽高
       this.data.setScreenShortInfo(window.innerWidth, window.innerHeight);
       if (this.screenShortImageController == null) return;
@@ -140,6 +151,8 @@ export default class EventMonitoring {
 
           // 存放html2canvas截取的内容
           this.screenShortImageController = canvas;
+          // 存储屏幕截图
+          this.data.setScreenShortImageController(canvas);
 
           // 赋值截图区域canvas画布
           this.screenShortCanvas = context;
@@ -177,6 +190,10 @@ export default class EventMonitoring {
             0,
             this.screenShortImageController.width,
             this.screenShortImageController.height
+          );
+          // 存储屏幕截图
+          this.data.setScreenShortImageController(
+            this.screenShortImageController
           );
 
           // 赋值截图区域canvas画布
@@ -259,9 +276,6 @@ export default class EventMonitoring {
       // 记录当前鼠标开始坐标
       this.drawGraphPosition.startX = mouseX;
       this.drawGraphPosition.startY = mouseY;
-    } else {
-      // 隐藏截图工具栏
-      this.data.setToolStatus(false);
     }
     // 当前操作的是画笔
     if (this.toolName == "brush" && this.screenShortCanvas) {
@@ -323,6 +337,9 @@ export default class EventMonitoring {
       this.movePosition.moveStartX = mouseX;
       this.movePosition.moveStartY = mouseY;
     } else {
+      // 保存当前裁剪框的坐标
+      this.drawGraphPrevX = this.drawGraphPosition.startX;
+      this.drawGraphPrevY = this.drawGraphPosition.startY;
       // 绘制裁剪框,记录当前鼠标开始坐标
       this.drawGraphPosition.startX = mouseX;
       this.drawGraphPosition.startY = mouseY;
@@ -335,19 +352,39 @@ export default class EventMonitoring {
       this.screenShortCanvas == null ||
       this.screenShortController.value == null ||
       this.toolName == "undo"
-    )
+    ) {
       return;
+    }
+
+    // 工具栏未选择且鼠标处于按下状态时
+    if (!this.data.getToolClickStatus().value && this.dragging) {
+      // 修改拖动状态为true;
+      this.dragFlag = true;
+      // 隐藏截图工具栏
+      this.data.setToolStatus(false);
+    }
     this.clickFlag = false;
-    // 获取裁剪框位置信息
+    // 获取当前绘制中的工具位置信息
     const { startX, startY, width, height } = this.drawGraphPosition;
     // 获取当前鼠标坐标
     const currentX = nonNegativeData(event.offsetX);
     const currentY = nonNegativeData(event.offsetY);
-    // 裁剪框临时宽高
+    // 绘制中工具的临时宽高
     const tempWidth = currentX - startX;
     const tempHeight = currentY - startY;
     // 工具栏绘制
     if (this.data.getToolClickStatus().value && this.dragging) {
+      // 获取裁剪框位置信息
+      const cutBoxPosition = this.data.getCutOutBoxPosition();
+      // 绘制中工具的起始x、y坐标不能小于裁剪框的起始坐标
+      // 绘制中工具的起始x、y坐标不能大于裁剪框的结束标作
+      // 当前鼠标的x坐标不能小于裁剪框起始x坐标，不能大于裁剪框的结束坐标
+      // 当前鼠标的y坐标不能小于裁剪框起始y坐标，不能大于裁剪框的结束坐标
+      if (
+        !getDrawBoundaryStatus(startX, startY, cutBoxPosition) ||
+        !getDrawBoundaryStatus(currentX, currentY, cutBoxPosition)
+      )
+        return;
       // 当前操作的不是马赛克则显示最后一次画布绘制时的状态
       if (this.toolName != "mosaicPen") {
         this.showLastHistory();
@@ -449,9 +486,47 @@ export default class EventMonitoring {
     this.draggingTrim = false;
     if (
       this.screenShortController.value == null ||
-      this.screenShortCanvas == null
+      this.screenShortCanvas == null ||
+      this.screenShortImageController == null
     ) {
       return;
+    }
+
+    // 工具栏未点击且鼠标未拖动且单击截屏状态为false则复原裁剪框位置
+    if (
+      !this.data.getToolClickStatus().value &&
+      !this.dragFlag &&
+      !this.clickCutFullScreen
+    ) {
+      // 复原裁剪框的坐标
+      this.drawGraphPosition.startX = this.drawGraphPrevX;
+      this.drawGraphPosition.startY = this.drawGraphPrevY;
+      return;
+    }
+    // 调用者尚未拖拽生成选区
+    // 鼠标尚未拖动
+    // 单击截取屏幕状态为true
+    // 则截取整个屏幕
+    const cutBoxPosition = this.data.getCutOutBoxPosition();
+    if (
+      cutBoxPosition.width === 0 &&
+      cutBoxPosition.height === 0 &&
+      cutBoxPosition.startX === 0 &&
+      cutBoxPosition.startY === 0 &&
+      !this.dragFlag &&
+      this.clickCutFullScreen
+    ) {
+      // 设置裁剪框位置为全屏
+      this.tempGraphPosition = drawCutOutBox(
+        0,
+        0,
+        this.screenShortImageController.width,
+        this.screenShortImageController.height,
+        this.screenShortCanvas,
+        this.borderSize,
+        this.screenShortController.value,
+        this.screenShortImageController
+      ) as drawCutOutBoxReturnType;
     }
     if (this.data.getToolClickStatus().value) {
       // 保存绘制记录
@@ -473,6 +548,8 @@ export default class EventMonitoring {
     if (this.screenShortController.value != null) {
       // 修改鼠标状态为拖动
       this.screenShortController.value.style.cursor = "move";
+      // 复原拖动状态
+      this.dragFlag = false;
       // 显示截图工具栏
       this.data.setToolStatus(true);
       nextTick().then(() => {
@@ -529,6 +606,7 @@ export default class EventMonitoring {
           this.cutOutBoxBorderArr[i].width,
           this.cutOutBoxBorderArr[i].height
         );
+        // 当前坐标点处于8个可操作点上，修改鼠标指针样式
         if (context.isPointInPath(currentX, currentY)) {
           switch (this.cutOutBoxBorderArr[i].index) {
             case 1:
@@ -539,15 +617,23 @@ export default class EventMonitoring {
               }
               break;
             case 2:
+              // 工具栏被点击则不改变指针样式
+              if (this.data.getToolClickStatus().value) break;
               this.screenShortController.value.style.cursor = "ns-resize";
               break;
             case 3:
+              // 工具栏被点击则不改变指针样式
+              if (this.data.getToolClickStatus().value) break;
               this.screenShortController.value.style.cursor = "ew-resize";
               break;
             case 4:
+              // 工具栏被点击则不改变指针样式
+              if (this.data.getToolClickStatus().value) break;
               this.screenShortController.value.style.cursor = "nwse-resize";
               break;
             case 5:
+              // 工具栏被点击则不改变指针样式
+              if (this.data.getToolClickStatus().value) break;
               this.screenShortController.value.style.cursor = "nesw-resize";
               break;
             default:
@@ -638,6 +724,34 @@ export default class EventMonitoring {
   ) => {
     // 更新当前点击的工具栏条目
     this.toolName = toolName;
+    const screenShortController = this.data.getScreenShortController();
+    const ScreenShortImageController = this.data.getScreenShortImageController();
+    if (
+      screenShortController.value == null ||
+      ScreenShortImageController == null
+    )
+      return;
+    // 获取canvas容器
+    const screenShortCanvas = screenShortController.value.getContext(
+      "2d"
+    ) as CanvasRenderingContext2D;
+    // 工具栏尚未点击，当前属于首次点击，重新绘制一个无像素点的裁剪框
+    if (!this.data.getToolClickStatus().value) {
+      // 获取裁剪框位置信息
+      const cutBoxPosition = this.data.getCutOutBoxPosition();
+      // 开始绘制无像素点裁剪框
+      drawCutOutBox(
+        cutBoxPosition.startX,
+        cutBoxPosition.startY,
+        cutBoxPosition.width,
+        cutBoxPosition.height,
+        screenShortCanvas,
+        this.borderSize,
+        screenShortController.value,
+        ScreenShortImageController,
+        false
+      );
+    }
     this.data.setToolName(toolName);
     // 为当前点击项添加选中时的class名
     setSelectedClassName(mouseEvent, index, false);
@@ -776,19 +890,19 @@ export default class EventMonitoring {
         // 将canvas转为图片
         saveCanvasToImage(
           this.screenShortCanvas,
-          startX + this.borderSize / 2.0,
-          startY + this.borderSize / 2.0,
-          width - this.borderSize * 2.4,
-          height - this.borderSize * 2.4
+          startX,
+          startY,
+          width,
+          height
         );
       } else {
         // 将canvas转为base64
         base64 = saveCanvasToBase64(
           this.screenShortCanvas,
-          startX + this.borderSize / 2.0,
-          startY + this.borderSize / 2.0,
-          width - this.borderSize * 2.4,
-          height - this.borderSize * 2.4
+          startX,
+          startY,
+          width,
+          height
         );
       }
     }

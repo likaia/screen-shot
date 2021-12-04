@@ -1,16 +1,21 @@
 import { App } from "vue";
 import screenShort from "@/components/screen-short.vue";
 import PlugInParameters from "@/module/main-entrance/PlugInParameters";
+import { screenShotType } from "@/module/type/ComponentType";
 
 export default {
-  install(app: App, options: { enableWebRtc: boolean; level: number }): void {
+  install(app: App, options: screenShotType): void {
     const plugInParameters = new PlugInParameters();
-    if (
-      options &&
-      Object.prototype.hasOwnProperty.call(options, "enableWebRtc")
-    ) {
-      plugInParameters.setWebRtcStatus(options?.enableWebRtc);
-      plugInParameters.setLevel(options?.level);
+    if (options?.enableWebRtc != null) {
+      plugInParameters.setWebRtcStatus(options.enableWebRtc);
+    }
+
+    if (options?.level != null) {
+      plugInParameters.setLevel(options.level);
+    }
+
+    if (options?.clickCutFullScreen != null) {
+      plugInParameters.serClickCutFullScreenStatus(options.clickCutFullScreen);
     }
     // 将截屏组件挂载到vue实例
     app.component(screenShort.name, screenShort);

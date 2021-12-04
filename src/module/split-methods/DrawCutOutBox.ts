@@ -21,7 +21,8 @@ export function drawCutOutBox(
   context: CanvasRenderingContext2D,
   borderSize: number,
   controller: HTMLCanvasElement,
-  imageController: HTMLCanvasElement
+  imageController: HTMLCanvasElement,
+  drawBorders = true
 ) {
   // 获取画布宽高
   const canvasWidth = controller?.width;
@@ -45,42 +46,45 @@ export function drawCutOutBox(
   // 绘制8个边框像素点并保存坐标信息以及事件参数
   context.globalCompositeOperation = "source-over";
   context.fillStyle = "#2CABFF";
-  // 像素点大小
-  const size = borderSize;
-  // 绘制像素点
-  context.fillRect(mouseX - size / 2, mouseY - size / 2, size, size);
-  context.fillRect(
-    mouseX - size / 2 + width / 2,
-    mouseY - size / 2,
-    size,
-    size
-  );
-  context.fillRect(mouseX - size / 2 + width, mouseY - size / 2, size, size);
-  context.fillRect(
-    mouseX - size / 2,
-    mouseY - size / 2 + height / 2,
-    size,
-    size
-  );
-  context.fillRect(
-    mouseX - size / 2 + width,
-    mouseY - size / 2 + height / 2,
-    size,
-    size
-  );
-  context.fillRect(mouseX - size / 2, mouseY - size / 2 + height, size, size);
-  context.fillRect(
-    mouseX - size / 2 + width / 2,
-    mouseY - size / 2 + height,
-    size,
-    size
-  );
-  context.fillRect(
-    mouseX - size / 2 + width,
-    mouseY - size / 2 + height,
-    size,
-    size
-  );
+  // 是否绘制裁剪框的8个像素点
+  if (drawBorders) {
+    // 像素点大小
+    const size = borderSize;
+    // 绘制像素点
+    context.fillRect(mouseX - size / 2, mouseY - size / 2, size, size);
+    context.fillRect(
+      mouseX - size / 2 + width / 2,
+      mouseY - size / 2,
+      size,
+      size
+    );
+    context.fillRect(mouseX - size / 2 + width, mouseY - size / 2, size, size);
+    context.fillRect(
+      mouseX - size / 2,
+      mouseY - size / 2 + height / 2,
+      size,
+      size
+    );
+    context.fillRect(
+      mouseX - size / 2 + width,
+      mouseY - size / 2 + height / 2,
+      size,
+      size
+    );
+    context.fillRect(mouseX - size / 2, mouseY - size / 2 + height, size, size);
+    context.fillRect(
+      mouseX - size / 2 + width / 2,
+      mouseY - size / 2 + height,
+      size,
+      size
+    );
+    context.fillRect(
+      mouseX - size / 2 + width,
+      mouseY - size / 2 + height,
+      size,
+      size
+    );
+  }
   // 绘制结束
   context.restore();
   // 使用drawImage将图片绘制到蒙层下方
@@ -120,6 +124,39 @@ export function drawCutOutBox(
   context.drawImage(imageController, 0, 0, imgWidth, imgHeight);
   context.restore();
   // 返回裁剪框临时位置信息
+  if (width > 0 && height > 0) {
+    // 考虑左上往右下拉区域的情况
+    return {
+      startX: mouseX,
+      startY: mouseY,
+      width: width,
+      height: height
+    };
+  } else if (width < 0 && height < 0) {
+    // 考虑右下往左上拉区域的情况
+    return {
+      startX: mouseX + width,
+      startY: mouseY + height,
+      width: Math.abs(width),
+      height: Math.abs(height)
+    };
+  } else if (width > 0 && height < 0) {
+    // 考虑左下往右上拉区域的情况
+    return {
+      startX: mouseX,
+      startY: mouseY + height,
+      width: width,
+      height: Math.abs(height)
+    };
+  } else if (width < 0 && height > 0) {
+    // 考虑右上往左下拉区域的情况
+    return {
+      startX: mouseX + width,
+      startY: mouseY,
+      width: Math.abs(width),
+      height: height
+    };
+  }
   return {
     startX: mouseX,
     startY: mouseY,

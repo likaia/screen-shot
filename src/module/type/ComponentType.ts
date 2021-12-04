@@ -37,3 +37,9 @@ export type drawCutOutBoxReturnType = {
   width: number;
   height: number;
 };
+
+export type screenShotType = {
+  enableWebRtc?: boolean; // 是否启用webrtc，默认是启用状态
+  level?: number; // 截图容器层级
+  clickCutFullScreen?: boolean; // 单击截全屏启用状态, 默认值为false
+};

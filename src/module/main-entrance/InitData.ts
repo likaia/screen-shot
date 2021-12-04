@@ -4,6 +4,8 @@ import { positionInfoType } from "@/module/type/ComponentType";
 // 截图容器宽高
 const screenShortWidth = ref<number>(0);
 const screenShortHeight = ref<number>(0);
+// 裁剪框拖拽状态
+let dragging = false;
 
 // 截图工具栏展示状态与位置
 const toolStatus = ref<boolean>(false);
@@ -40,6 +42,8 @@ const optionIcoPosition = ref<number>(0);
 let screenShortController = ref<HTMLCanvasElement | null>(null);
 // 获取截图工具栏容器dom
 let toolController = ref<HTMLDivElement | null>(null);
+// 屏幕截图容器
+let screenShortImageController: HTMLCanvasElement | null = null;
 // 获取文本输入区域dom
 let textInputController = ref<HTMLDivElement | null>(null);
 // 截图工具栏画笔选择dom
@@ -134,6 +138,16 @@ export default class InitData {
     return textClickStatus;
   }
 
+  // 获取屏幕截图容器
+  public getScreenShortImageController() {
+    return screenShortImageController;
+  }
+
+  // 设置屏幕截图
+  public setScreenShortImageController(imageController: HTMLCanvasElement) {
+    screenShortImageController = imageController;
+  }
+
   // 设置截图工具栏展示状态
   public setToolStatus(status: boolean) {
     toolStatus.value = status;
@@ -171,6 +185,14 @@ export default class InitData {
   // 获取裁剪框位置信息
   public getCutOutBoxPosition() {
     return cutOutBoxPosition;
+  }
+
+  public getDragging() {
+    return dragging;
+  }
+
+  public setDragging(status: boolean) {
+    dragging = status;
   }
 
   // 设置裁剪框位置信息
