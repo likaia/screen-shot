@@ -6,7 +6,8 @@ export function saveCanvasToBase64(
   startX: number,
   startY: number,
   width: number,
-  height: number
+  height: number,
+  quality = 0.75
 ) {
   // 获取裁剪框区域图片信息
   const img = context.getImageData(startX, startY, width, height);
@@ -19,6 +20,23 @@ export function saveCanvasToBase64(
   if (imgContext) {
     // 将图片放进canvas中
     imgContext.putImageData(img, 0, 0);
+    // 将图片自动添加至剪贴板中
+    canvas?.toBlob(
+      blob => {
+        if (blob == null) return;
+        const Clipboard = window.ClipboardItem;
+        // 浏览器不支持Clipboard
+        if (Clipboard == null) return canvas.toDataURL("png");
+        const clipboardItem = new Clipboard({
+          [blob.type]: blob
+        });
+        navigator.clipboard?.write([clipboardItem]).then(() => {
+          return "写入成功";
+        });
+      },
+      "image/png",
+      quality
+    );
     return canvas.toDataURL("png");
   }
   return "";

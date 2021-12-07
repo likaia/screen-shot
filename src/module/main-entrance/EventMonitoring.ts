@@ -6,7 +6,7 @@ import {
   zoomCutOutBoxReturnType,
   drawCutOutBoxReturnType,
   positionInfoType
-} from "@/module/type/ComponentType.ts";
+} from "@/module/type/ComponentType";
 import { drawMasking } from "@/module/split-methods/DrawMasking";
 import html2canvas from "html2canvas";
 import PlugInParameters from "@/module/main-entrance/PlugInParameters";
@@ -87,6 +87,8 @@ export default class EventMonitoring {
   private dragFlag = false;
   // 单击截取屏启用状态
   private clickCutFullScreen = false;
+  // 全屏截取状态
+  private getFullScreenStatus = false;
   // 上一个裁剪框坐标信息
   private drawGraphPrevX = 0;
   private drawGraphPrevY = 0;
@@ -148,6 +150,14 @@ export default class EventMonitoring {
         html2canvas(document.body, {}).then(canvas => {
           // 装载截图的dom为null则退出
           if (this.screenShortController.value == null) return;
+
+          // 调整截屏容器层级
+          this.screenShortController.value.style.zIndex =
+            plugInParameters.getLevel() + "";
+          // 调整截图工具栏层级
+          if (this.toolController.value == null) return;
+          this.toolController.value.style.zIndex = `${plugInParameters.getLevel() +
+            1}`;
 
           // 存放html2canvas截取的内容
           this.screenShortImageController = canvas;
@@ -219,6 +229,10 @@ export default class EventMonitoring {
           // 调整截屏容器层级
           this.screenShortController.value.style.zIndex =
             plugInParameters.getLevel() + "";
+          // 调整截图工具栏层级
+          if (this.toolController.value == null) return;
+          this.toolController.value.style.zIndex = `${plugInParameters.getLevel() +
+            1}`;
         }, 500);
       });
     });
@@ -516,12 +530,13 @@ export default class EventMonitoring {
       !this.dragFlag &&
       this.clickCutFullScreen
     ) {
+      this.getFullScreenStatus = true;
       // 设置裁剪框位置为全屏
       this.tempGraphPosition = drawCutOutBox(
         0,
         0,
-        this.screenShortImageController.width,
-        this.screenShortImageController.height,
+        this.screenShortController.value.width - this.borderSize / 2,
+        this.screenShortController.value.height - this.borderSize / 2,
         this.screenShortCanvas,
         this.borderSize,
         this.screenShortController.value,
@@ -559,8 +574,14 @@ export default class EventMonitoring {
             this.drawGraphPosition,
             this.toolController.value?.offsetWidth
           );
+          // 当前截取的是全屏，则修改工具栏的位置到截图容器最底部，防止超出
+          if (this.getFullScreenStatus) {
+            toolLocation.mouseY -= 64;
+          }
           // 设置截图工具栏位置
           this.data.setToolInfo(toolLocation.mouseX, toolLocation.mouseY);
+          // 状态重置
+          this.getFullScreenStatus = false;
         }
       });
     }

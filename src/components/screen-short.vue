@@ -107,7 +107,7 @@ import { selectColor } from "@/module/common-methords/SelectColor";
 import { SetupContext } from "@vue/runtime-core";
 import _ from "lodash";
 import { setBrushSize } from "@/module/common-methords/SetBrushSize";
-import toolbar from "@/module/config/Toolbar.ts";
+import toolbar from "@/module/config/Toolbar";
 
 export default {
   name: "screen-short",
