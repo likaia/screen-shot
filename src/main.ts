@@ -15,7 +15,11 @@ export default {
     }
 
     if (options?.clickCutFullScreen != null) {
-      plugInParameters.serClickCutFullScreenStatus(options.clickCutFullScreen);
+      plugInParameters.setClickCutFullScreenStatus(options.clickCutFullScreen);
+    }
+
+    if (options?.hiddenToolIco) {
+      plugInParameters.setHiddenToolIco(options.hiddenToolIco);
     }
     // 将截屏组件挂载到vue实例
     app.component(screenShort.name, screenShort);

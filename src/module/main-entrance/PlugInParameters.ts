@@ -1,3 +1,5 @@
+import { toolIcoType } from "@/module/type/ComponentType";
+
 let enableWebRtc = true;
 
 // 数据初始化标识
@@ -5,6 +7,8 @@ let initStatus = false;
 let level = 0;
 // 单击截取屏启用状态
 let clickCutFullScreen = false;
+// 需要隐藏的工具栏图标
+let hiddenToolIco: toolIcoType = {};
 
 export default class PlugInParameters {
   constructor() {
@@ -49,7 +53,15 @@ export default class PlugInParameters {
     return clickCutFullScreen;
   }
 
-  public serClickCutFullScreenStatus(value: boolean) {
+  public setClickCutFullScreenStatus(value: boolean) {
     clickCutFullScreen = value;
+  }
+
+  public getHiddenToolIco() {
+    return hiddenToolIco;
+  }
+
+  public setHiddenToolIco(obj: toolIcoType) {
+    hiddenToolIco = obj;
   }
 }

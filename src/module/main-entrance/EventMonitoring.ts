@@ -129,6 +129,8 @@ export default class EventMonitoring {
       const plugInParameters = new PlugInParameters();
       // 单击截屏启用状态
       this.clickCutFullScreen = plugInParameters.getClickCutFullScreenStatus();
+      // 设置需要隐藏的工具栏图标
+      this.data.setHiddenToolIco(plugInParameters.getHiddenToolIco());
       // 设置截图区域canvas宽高
       this.data.setScreenShortInfo(window.innerWidth, window.innerHeight);
       if (this.screenShortImageController == null) return;

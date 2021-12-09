@@ -14,26 +14,34 @@
       :style="{ left: toolLeft + 'px', top: toolTop + 'px' }"
       ref="toolController"
     >
+      <!--  保存图标需要根据参数来决定是否显示  -->
       <div
         v-for="item in toolbar"
         :key="item.id"
+        v-show="!(item.title === 'save' && hiddenToolIco?.save === true)"
         :class="`item-panel ${item.title} `"
         @click="toolClickEvent(item.title, item.id, $event)"
       ></div>
-      <!--撤销部分单独处理-->
+      <!--撤销部分单独处理, 加多了图标是否需要隐藏的判断-->
       <div
-        v-if="undoStatus"
+        v-if="undoStatus && !hiddenToolIco?.undo === true"
         class="item-panel undo"
         @click="toolClickEvent('undo', 9, $event)"
       ></div>
-      <div v-else class="item-panel undo-disabled"></div>
+      <div
+        v-if="!undoStatus && !hiddenToolIco?.undo === true"
+        class="item-panel undo-disabled"
+      ></div>
+
       <!--关闭与确认进行单独处理-->
       <div
         class="item-panel close"
         @click="toolClickEvent('close', 10, $event)"
       ></div>
+      <!-- 加多了图标是否需要隐藏的判断 -->
       <div
         class="item-panel confirm"
+        v-if="!hiddenToolIco?.confirm === true"
         @click="toolClickEvent('confirm', 11, $event)"
       ></div>
     </div>
@@ -131,6 +139,7 @@ export default {
     const toolTop = data.getToolTop();
     const optionIcoPosition = data.getOptionIcoPosition();
     const selectedColor = data.getSelectedColor();
+    const hiddenToolIco = data.getHiddenToolIco();
     const event = new eventMonitoring(props, context as SetupContext<any>);
     const toolClickEvent = event.toolClickEvent;
     return {
@@ -155,7 +164,8 @@ export default {
       toolClickEvent,
       getColor,
       selectColor,
-      setBrushSize
+      setBrushSize,
+      hiddenToolIco
     };
   },
   emits: {

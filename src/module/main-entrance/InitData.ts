@@ -1,5 +1,5 @@
 import { ComponentInternalInstance, ref } from "vue";
-import { positionInfoType } from "@/module/type/ComponentType";
+import { positionInfoType, toolIcoType } from "@/module/type/ComponentType";
 
 // 截图容器宽高
 const screenShortWidth = ref<number>(0);
@@ -37,6 +37,8 @@ let cutOutBoxPosition: positionInfoType = {
 };
 // 截图工具栏画笔选择三角形角标位置
 const optionIcoPosition = ref<number>(0);
+// 需要隐藏的工具栏图标
+const hiddenToolIco = ref<toolIcoType>({});
 
 // 获取截图容器dom
 let screenShortController = ref<HTMLCanvasElement | null>(null);
@@ -86,6 +88,7 @@ export default class InitData {
       selectedColor.value = "#F53340";
       toolName.value = "";
       penSize.value = 2;
+      hiddenToolIco.value = {};
     }
   }
 
@@ -297,5 +300,13 @@ export default class InitData {
   // 获取当前emit
   public getEmit() {
     return emit;
+  }
+
+  public getHiddenToolIco() {
+    return hiddenToolIco;
+  }
+
+  public setHiddenToolIco(obj: toolIcoType) {
+    hiddenToolIco.value = obj;
   }
 }
