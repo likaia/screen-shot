@@ -21,6 +21,14 @@ export default {
     if (options?.hiddenToolIco) {
       plugInParameters.setHiddenToolIco(options.hiddenToolIco);
     }
+
+    if (options?.enableCORS) {
+      plugInParameters.setEnableCORSStatus(options.enableCORS);
+    }
+
+    if (options?.proxyAddress) {
+      plugInParameters.setProxyAddress(options.proxyAddress);
+    }
     // 将截屏组件挂载到vue实例
     app.component(screenShort.name, screenShort);
   }

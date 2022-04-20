@@ -9,6 +9,9 @@ let level = 0;
 let clickCutFullScreen = false;
 // 需要隐藏的工具栏图标
 let hiddenToolIco: toolIcoType = {};
+// html2canvas模式是否启用跨域图片加载模式
+let enableCORS = false;
+let proxyAddress: string | undefined = undefined;
 
 export default class PlugInParameters {
   constructor() {
@@ -63,5 +66,21 @@ export default class PlugInParameters {
 
   public setHiddenToolIco(obj: toolIcoType) {
     hiddenToolIco = obj;
+  }
+
+  public getEnableCORSStatus(): boolean {
+    return enableCORS;
+  }
+
+  public setEnableCORSStatus(status: boolean) {
+    enableCORS = status;
+  }
+
+  public getProxyAddress(): string | undefined {
+    return proxyAddress;
+  }
+
+  public setProxyAddress(address: string) {
+    proxyAddress = address;
   }
 }

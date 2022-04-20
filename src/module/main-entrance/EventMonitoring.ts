@@ -149,7 +149,10 @@ export default class EventMonitoring {
       if (context == null) return;
       if (!plugInParameters.getWebRtcStatus()) {
         // html2canvas截屏
-        html2canvas(document.body, {}).then(canvas => {
+        html2canvas(document.body, {
+          useCORS: plugInParameters.getEnableCORSStatus(),
+          proxy: plugInParameters.getProxyAddress()
+        }).then(canvas => {
           // 装载截图的dom为null则退出
           if (this.screenShortController.value == null) return;
 
