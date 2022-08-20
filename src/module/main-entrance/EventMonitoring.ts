@@ -417,9 +417,7 @@ export default class EventMonitoring {
             tempHeight,
             this.data.getSelectedColor().value,
             this.data.getPenSize().value,
-            this.screenShortCanvas,
-            this.screenShortController.value as HTMLCanvasElement,
-            this.screenShortImageController as HTMLCanvasElement
+            this.screenShortCanvas
           );
           break;
         case "round":
