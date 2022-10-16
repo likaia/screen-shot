@@ -28,6 +28,7 @@ import { calculateOptionIcoPosition } from "@/module/split-methods/CalculateOpti
 import { setSelectedClassName } from "@/module/common-methords/SetSelectedClassName";
 import adapter from "webrtc-adapter";
 import { getDrawBoundaryStatus } from "@/module/split-methods/BoundaryJudgment";
+import { getCanvas2dCtx } from "@/module/common-methords/CanvasPatch";
 
 export default class EventMonitoring {
   // 当前实例的响应式data数据
@@ -102,6 +103,9 @@ export default class EventMonitoring {
   private maxUndoNum = 15;
   // 马赛克涂抹区域大小
   private degreeOfBlur = 5;
+  private dpr = window.devicePixelRatio || 1;
+  // 截全屏时工具栏展示的位置要减去的高度
+  private fullScreenDiffHeight = 60;
   private history: Array<Record<string, any>> = [];
   // 文本输入框位置
   private textInputPosition: { mouseX: number; mouseY: number } = {
@@ -131,22 +135,18 @@ export default class EventMonitoring {
       this.clickCutFullScreen = plugInParameters.getClickCutFullScreenStatus();
       // 设置需要隐藏的工具栏图标
       this.data.setHiddenToolIco(plugInParameters.getHiddenToolIco());
-      // 设置截图区域canvas宽高
-      this.data.setScreenShortInfo(window.innerWidth, window.innerHeight);
       if (this.screenShortImageController == null) return;
       // 设置截图图片存放容器宽高
       this.screenShortImageController.width = window.innerWidth;
       this.screenShortImageController.height = window.innerHeight;
-      if (plugInParameters.getWebRtcStatus()) {
-        // 设置为屏幕宽高
-        this.data.setScreenShortInfo(window.screen.width, window.screen.height);
-        // 设置为屏幕宽高
-        this.screenShortImageController.width = window.screen.width;
-        this.screenShortImageController.height = window.screen.height;
-      }
       // 获取截图区域画canvas容器画布
-      const context = this.screenShortController.value?.getContext("2d");
-      if (context == null) return;
+      if (this.screenShortController.value == null) return;
+      const canvasContext = getCanvas2dCtx(
+        this.screenShortController.value,
+        this.screenShortImageController.width,
+        this.screenShortImageController.height
+      );
+      if (canvasContext == null) return;
       if (!plugInParameters.getWebRtcStatus()) {
         // html2canvas截屏
         html2canvas(document.body, {
@@ -170,9 +170,13 @@ export default class EventMonitoring {
           this.data.setScreenShortImageController(canvas);
 
           // 赋值截图区域canvas画布
-          this.screenShortCanvas = context;
+          this.screenShortCanvas = canvasContext;
           // 绘制蒙层
-          drawMasking(context);
+          drawMasking(
+            canvasContext,
+            this.screenShortController.value.width,
+            this.screenShortController.value.height
+          );
 
           // 添加监听
           this.screenShortController.value?.addEventListener(
@@ -196,15 +200,26 @@ export default class EventMonitoring {
           // 装载截图的dom为null则退出
           if (this.screenShortController.value == null) return;
           if (this.screenShortImageController == null) return;
-          const imageContext = this.screenShortImageController.getContext("2d");
-          if (imageContext == null) return;
+          const containerWidth = this.screenShortImageController?.width;
+          const containerHeight = this.screenShortImageController?.height;
           // 将获取到的屏幕截图绘制到图片容器里
-          imageContext.drawImage(
+          const imgContext = getCanvas2dCtx(
+            this.screenShortImageController,
+            containerWidth,
+            containerHeight
+          );
+          // 绘制时的宽高需要使用画布的css尺寸
+          const { imgWidth, imgHeight } = {
+            imgWidth: parseInt(this.screenShortImageController.style.width),
+            imgHeight: parseInt(this.screenShortImageController.style.height)
+          };
+          // 将获取到的屏幕截图绘制到图片容器里
+          imgContext?.drawImage(
             this.videoController,
             0,
             0,
-            this.screenShortImageController.width,
-            this.screenShortImageController.height
+            imgWidth,
+            imgHeight
           );
           // 存储屏幕截图
           this.data.setScreenShortImageController(
@@ -212,9 +227,13 @@ export default class EventMonitoring {
           );
 
           // 赋值截图区域canvas画布
-          this.screenShortCanvas = context;
+          this.screenShortCanvas = canvasContext;
           // 绘制蒙层
-          drawMasking(context);
+          drawMasking(
+            canvasContext,
+            this.screenShortController.value.width,
+            this.screenShortController.value.height
+          );
 
           // 添加监听
           this.screenShortController.value?.addEventListener(
@@ -251,12 +270,22 @@ export default class EventMonitoring {
   // 开始捕捉屏幕
   private startCapture = async () => {
     let captureStream = null;
+    if (this.screenShortImageController == null) return;
 
     try {
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       // 捕获屏幕
-      captureStream = await navigator.mediaDevices.getDisplayMedia();
+      captureStream = await navigator.mediaDevices.getDisplayMedia({
+        audio: false,
+        video: {
+          width: this.screenShortImageController.width * this.dpr,
+          height: this.screenShortImageController.height * this.dpr
+        },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        preferCurrentTab: true
+      });
       // 将MediaStream输出至video标签
       this.videoController.srcObject = captureStream;
     } catch (err) {
@@ -578,8 +607,17 @@ export default class EventMonitoring {
             this.toolController.value?.offsetWidth
           );
           // 当前截取的是全屏，则修改工具栏的位置到截图容器最底部，防止超出
-          if (this.getFullScreenStatus) {
-            toolLocation.mouseY -= 64;
+          if (this.getFullScreenStatus && this.screenShortController.value) {
+            const containerHeight = parseInt(
+              this.screenShortController.value.style.height
+            );
+            // 重新计算工具栏的x轴位置
+            const toolPositionX =
+              (this.drawGraphPosition.width / this.dpr -
+                this.toolController.value.offsetWidth) /
+              2;
+            toolLocation.mouseY = containerHeight - this.fullScreenDiffHeight;
+            toolLocation.mouseX = toolPositionX;
           }
           // 设置截图工具栏位置
           this.data.setToolInfo(toolLocation.mouseX, toolLocation.mouseY);
@@ -631,7 +669,7 @@ export default class EventMonitoring {
           this.cutOutBoxBorderArr[i].height
         );
         // 当前坐标点处于8个可操作点上，修改鼠标指针样式
-        if (context.isPointInPath(currentX, currentY)) {
+        if (context.isPointInPath(currentX * this.dpr, currentY * this.dpr)) {
           switch (this.cutOutBoxBorderArr[i].index) {
             case 1:
               if (this.data.getToolClickStatus().value) {
