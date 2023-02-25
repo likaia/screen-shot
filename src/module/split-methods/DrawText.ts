@@ -68,7 +68,6 @@ export function drawText(
   // 设置字体颜色
   context.fillStyle = color;
   context.textBaseline = "middle";
-  n;
   context.font = `bold ${fontSize}px Microsoft YaHei`;
   context.fillText(text, mouseX, mouseY);
   // 结束绘制
