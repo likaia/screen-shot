@@ -136,9 +136,13 @@ export default class EventMonitoring {
       // 设置需要隐藏的工具栏图标
       this.data.setHiddenToolIco(plugInParameters.getHiddenToolIco());
       if (this.screenShortImageController == null) return;
+      const viewSize = {
+        width: parseFloat(window.getComputedStyle(document.body).width),
+        height: parseFloat(window.getComputedStyle(document.body).height)
+      };
       // 设置截图图片存放容器宽高
-      this.screenShortImageController.width = window.innerWidth;
-      this.screenShortImageController.height = window.innerHeight;
+      this.screenShortImageController.width = viewSize.width;
+      this.screenShortImageController.height = viewSize.height;
       // 获取截图区域画canvas容器画布
       if (this.screenShortController.value == null) return;
       const canvasContext = getCanvas2dCtx(
@@ -208,18 +212,20 @@ export default class EventMonitoring {
             containerWidth,
             containerHeight
           );
-          // 绘制时的宽高需要使用画布的css尺寸
-          const { imgWidth, imgHeight } = {
-            imgWidth: parseInt(this.screenShortImageController.style.width),
-            imgHeight: parseInt(this.screenShortImageController.style.height)
-          };
           // 将获取到的屏幕截图绘制到图片容器里
+          const { videoWidth, videoHeight } = this.videoController;
+          let fixWidth = containerWidth;
+          let fixHeight = (videoHeight * containerWidth) / videoWidth;
+          if (fixHeight > containerHeight) {
+            fixWidth = (containerWidth * containerHeight) / fixHeight;
+            fixHeight = containerHeight;
+          }
           imgContext?.drawImage(
             this.videoController,
             0,
             0,
-            imgWidth,
-            imgHeight
+            fixWidth,
+            fixHeight
           );
           // 存储屏幕截图
           this.data.setScreenShortImageController(
@@ -902,21 +908,15 @@ export default class EventMonitoring {
    * 取出一条历史记录
    */
   private takeOutHistory() {
-    const lastImageData = this.history.pop();
-    if (this.screenShortCanvas != null && lastImageData) {
+    this.history.pop();
+    if (this.screenShortCanvas != null && this.history.length > 0) {
       const context = this.screenShortCanvas;
-      if (this.undoClickNum == 0 && this.history.length > 0) {
-        // 首次取出需要取两条历史记录
-        const firstPopImageData = this.history.pop() as Record<string, any>;
-        context.putImageData(firstPopImageData["data"], 0, 0);
-      } else {
-        context.putImageData(lastImageData["data"], 0, 0);
-      }
+      context.putImageData(this.history[this.history.length - 1]["data"], 0, 0);
     }
 
     this.undoClickNum++;
     // 历史记录已取完，禁用撤回按钮点击
-    if (this.history.length <= 0) {
+    if (this.history.length - 1 <= 0) {
       this.undoClickNum = 0;
       this.data.setUndoStatus(false);
     }
