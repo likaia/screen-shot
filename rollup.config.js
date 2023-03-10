@@ -12,7 +12,8 @@ import alias from "@rollup/plugin-alias";
 import postcssImport from "postcss-import";
 import postcssUrl from "postcss-url";
 import url from "@rollup/plugin-url";
-import cssOnly from "rollup-plugin-css-only";
+import swc from "rollup-plugin-swc3";
+import swcConfig from "./swc.config.json";
 import cssnano from "cssnano";
 import yargs from "yargs";
 import { terser } from "rollup-plugin-terser";
@@ -28,13 +29,16 @@ const commandLineParameters = yargs(process.argv.slice(1)).options({
     default: "umd,esm,common"
   },
   // 打包后的js压缩状态
-  compressedState: { type: "string", alias: "compState", default: "false" }
+  compressedState: { type: "string", alias: "compState", default: "false" },
+  // 是否启用swc来处理js代码, 默认使用babel处理
+  enableSwc: { type: "string", alias: "enableSwc", default: "false" }
 }).argv;
 // 需要让rollup忽略的自定义参数
 const ignoredWarningsKey = [...Object.keys(commandLineParameters)];
 const splitCss = commandLineParameters.splitCss;
 const packagingFormat = commandLineParameters.packagingFormat.split(",");
 const compressedState = commandLineParameters.compressedState;
+const enableSwc = commandLineParameters.enableSwc;
 
 /**
  * 根据外部条件判断是否需要给对象添加属性
@@ -120,8 +124,6 @@ export default {
         }
       }
     }),
-    // 用于将vue组件中用到的css文件独立出来
-    splitCss === "true" ? cssOnly({ output: "style/screen-shot.css" }) : "",
     nodeResolve(),
     commonjs(),
     alias({
@@ -134,7 +136,7 @@ export default {
     // 此处用来处理外置css, 需要在入口文件中使用import来导入css文件
     postcss({
       // 内联css
-      extract: splitCss === "true" ? splitCss : "css/screen-shot.css",
+      extract: splitCss === "true" ? "style/css/screen-shot.css" : false,
       minimize: true,
       sourceMap: false,
       extensions: [".css", ".scss"],
@@ -180,11 +182,13 @@ export default {
       // 超过10kb则拷贝否则转base64
       limit: 10 * 1024 // 10KB
     }),
-    babel({
-      exclude: "node_modules/**",
-      babelHelpers: "bundled",
-      bundled: "auto"
-    }),
+    enableSwc === "true"
+      ? swc(swcConfig)
+      : babel({
+          exclude: "node_modules/**",
+          babelHelpers: "bundled",
+          bundled: "auto"
+        }),
     copy({
       targets: [
         {
