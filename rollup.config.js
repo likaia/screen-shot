@@ -10,6 +10,8 @@ import copy from "rollup-plugin-copy";
 import path from "path";
 import alias from "@rollup/plugin-alias";
 import postcssImport from "postcss-import";
+import postcssUrl from "postcss-url";
+import url from "@rollup/plugin-url";
 import cssOnly from "rollup-plugin-css-only";
 import cssnano from "cssnano";
 import yargs from "yargs";
@@ -107,7 +109,10 @@ export default {
   },
   plugins: [
     vue({
+      target: "browser",
       css: true,
+      // 把组件转换成 render 函数
+      compileTemplate: true,
       preprocessStyles: true,
       preprocessOptions: {
         scss: {
@@ -128,22 +133,53 @@ export default {
     }),
     // 此处用来处理外置css, 需要在入口文件中使用import来导入css文件
     postcss({
+      // 内联css
       extract: false,
       // extract: "css/screen-shot.css",
       minimize: true,
       sourceMap: false,
       extensions: [".css", ".scss"],
+      // 当前正在处理的CSS文件的路径, postcssUrl在拷贝资源时需要根据它来定位目标文件
+      to: path.resolve(__dirname, "dist/assets/*"),
       use: ["sass"],
       // autoprefixer: 给css3的一些属性加前缀
       // postcssImport: 处理css文件中的@import语句
       // cssnano: 它可以通过移除注释、空格和其他不必要的字符来压缩CSS代码
       plugins: [
         autoprefixer(),
-        postcssImport,
+        postcssImport(),
+        // 对scss中的别名进行统一替换处理（vue组件内置或者入口导入的scss文件都会走这里的规则）
+        postcssUrl([
+          {
+            filter: "**/*.*",
+            url(asset) {
+              return asset.url.replace(/~@/g, ".");
+            }
+          }
+        ]),
+        //再次调用将css中引入的图片按照规则进行处理
+        postcssUrl([
+          {
+            basePath: path.resolve(__dirname, "src"),
+            url: "inline",
+            maxSize: 8, // 最大文件大小（单位为KB），超过该大小的文件将不会被编码为base64
+            fallback: "copy", // 如果文件大小超过最大大小，则使用'copy'选项复制文件
+            useHash: true, // 进行hash命名
+            encodeType: "base64" // 指定编码类型为base64
+          }
+        ]),
         cssnano({
           preset: "default" // 使用默认配置
         })
       ]
+    }),
+    // 处理通过img标签引入的图片
+    url({
+      include: ["**/*.jpg", "**/*.png", "**/*.svg"],
+      // 输出路径
+      dest: "dist/assets",
+      // 超过10kb则拷贝否则转base64
+      limit: 10 * 1024 // 10KB
     }),
     babel({
       exclude: "node_modules/**",
