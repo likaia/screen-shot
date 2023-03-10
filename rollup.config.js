@@ -134,8 +134,7 @@ export default {
     // 此处用来处理外置css, 需要在入口文件中使用import来导入css文件
     postcss({
       // 内联css
-      extract: false,
-      // extract: "css/screen-shot.css",
+      extract: splitCss === "true" ? splitCss : "css/screen-shot.css",
       minimize: true,
       sourceMap: false,
       extensions: [".css", ".scss"],
