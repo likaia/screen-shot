@@ -12,8 +12,6 @@ import alias from "@rollup/plugin-alias";
 import postcssImport from "postcss-import";
 import postcssUrl from "postcss-url";
 import url from "@rollup/plugin-url";
-import swc from "rollup-plugin-swc3";
-import swcConfig from "./swc.config.json";
 import cssnano from "cssnano";
 import yargs from "yargs";
 import { terser } from "rollup-plugin-terser";
@@ -29,16 +27,13 @@ const commandLineParameters = yargs(process.argv.slice(1)).options({
     default: "umd,esm,common"
   },
   // 打包后的js压缩状态
-  compressedState: { type: "string", alias: "compState", default: "false" },
-  // 是否启用swc来处理js代码, 默认使用babel处理
-  enableSwc: { type: "string", alias: "enableSwc", default: "false" }
+  compressedState: { type: "string", alias: "compState", default: "false" }
 }).argv;
 // 需要让rollup忽略的自定义参数
 const ignoredWarningsKey = [...Object.keys(commandLineParameters)];
 const splitCss = commandLineParameters.splitCss;
 const packagingFormat = commandLineParameters.packagingFormat.split(",");
 const compressedState = commandLineParameters.compressedState;
-const enableSwc = commandLineParameters.enableSwc;
 
 /**
  * 根据外部条件判断是否需要给对象添加属性
@@ -182,13 +177,11 @@ export default {
       // 超过10kb则拷贝否则转base64
       limit: 10 * 1024 // 10KB
     }),
-    enableSwc === "true"
-      ? swc(swcConfig)
-      : babel({
-          exclude: "node_modules/**",
-          babelHelpers: "bundled",
-          bundled: "auto"
-        }),
+    babel({
+      exclude: "node_modules/**",
+      babelHelpers: "bundled",
+      bundled: "auto"
+    }),
     copy({
       targets: [
         {
