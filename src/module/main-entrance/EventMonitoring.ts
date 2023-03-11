@@ -625,6 +625,23 @@ export default class EventMonitoring {
             toolLocation.mouseY = containerHeight - this.fullScreenDiffHeight;
             toolLocation.mouseX = toolPositionX;
           }
+
+          if (this.screenShortController.value) {
+            const containerHeight = parseInt(
+              this.screenShortController.value.style.height
+            );
+
+            // 工具栏的位置超出截图容器时，调整工具栏位置防止超出
+            if (toolLocation.mouseY > containerHeight - 64) {
+              toolLocation.mouseY -= this.drawGraphPosition.height + 64;
+
+              // 超出屏幕顶部时
+              if (toolLocation.mouseY < 0) {
+                toolLocation.mouseY += 64;
+              }
+            }
+          }
+
           // 设置截图工具栏位置
           this.data.setToolInfo(toolLocation.mouseX, toolLocation.mouseY);
           // 状态重置
