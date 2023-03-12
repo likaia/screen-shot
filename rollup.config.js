@@ -15,6 +15,10 @@ import url from "@rollup/plugin-url";
 import cssnano from "cssnano";
 import yargs from "yargs";
 import { terser } from "rollup-plugin-terser";
+import visualizer from "rollup-plugin-visualizer";
+import progress from "rollup-plugin-progress";
+import serve from "rollup-plugin-serve";
+import livereload from "rollup-plugin-livereload";
 
 // 使用yargs解析命令行执行时的添加参数
 const commandLineParameters = yargs(process.argv.slice(1)).options({
@@ -27,13 +31,19 @@ const commandLineParameters = yargs(process.argv.slice(1)).options({
     default: "umd,esm,common"
   },
   // 打包后的js压缩状态
-  compressedState: { type: "string", alias: "compState", default: "false" }
+  compressedState: { type: "string", alias: "compState", default: "false" },
+  // 显示每个包的占用体积, 默认不显示
+  showModulePKGInfo: { type: "string", alias: "showPKGInfo", default: "false" },
+  // 是否开启devServer, 默认不开启
+  useDevServer: { type: "string", alias: "useDServer", default: "false" }
 }).argv;
 // 需要让rollup忽略的自定义参数
 const ignoredWarningsKey = [...Object.keys(commandLineParameters)];
 const splitCss = commandLineParameters.splitCss;
 const packagingFormat = commandLineParameters.packagingFormat.split(",");
 const compressedState = commandLineParameters.compressedState;
+const showModulePKGInfo = commandLineParameters.showModulePKGInfo;
+const useDevServer = commandLineParameters.useDevServer;
 
 /**
  * 根据外部条件判断是否需要给对象添加属性
@@ -182,11 +192,31 @@ export default {
       babelHelpers: "bundled",
       bundled: "auto"
     }),
+    // 用于展示打包后的模块占用信息
+    showModulePKGInfo === "true"
+      ? visualizer({
+          filename: "dist/bundle-stats.html"
+        })
+      : "",
+    progress({
+      format: "[:bar] :percent (:current/:total)"
+    }),
+    useDevServer === "true"
+      ? serve({
+          contentBase: "dist", //服务器启动的文件夹,访问此路径下的index.html文件
+          port: 8123
+        })
+      : null,
+    useDevServer === "true" ? livereload("dist") : null, //watch dist目录，当目录中的文件发生变化时，刷新页面
     copy({
       targets: [
         {
           src: "src/assets/fonts/**",
           dest: "dist/assets/fonts"
+        },
+        {
+          src: "public/**",
+          dest: "dist"
         }
       ]
     }),
