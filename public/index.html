@@ -16,16 +16,27 @@
       }
   </style>
   <script type="text/javascript">
+
     document.addEventListener('DOMContentLoaded', () => {
       const { createApp,ref } = Vue
       const app = {
         setup() {
           const showState = ref(false)
-          const modifyState = (state) => {
+          const destroyComponent = (state) => {
             showState.value = state
+            console.log(showState.value);
+          }
+          const getImg = (base64)=>{
+            console.log(base64);
+          }
+          const modifyState = (state)=>{
+            showState.value = state
+            console.log(showState.value);
           }
           return {
             showState,
+            destroyComponent,
+            getImg,
             modifyState
           }
         }
@@ -45,7 +56,13 @@
   <button @click="modifyState(true)">点我截图</button>
   <p>图片展示</p>
   <img src="./demo-img.jpeg" alt="" width="1920">
-  <screen-short v-if="showState"></screen-short>
+  <screen-short v-if="this.showState"
+                :key="new Date().getTime()"
+                @destroy-component="destroyComponent"
+                @get-image-data="getImg"
+  >
+  </screen-short>
+
 </div>
 </body>
 </html>

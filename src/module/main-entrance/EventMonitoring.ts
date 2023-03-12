@@ -949,11 +949,30 @@ export default class EventMonitoring {
       // 初始化响应式变量
       this.data.setInitStatus(true);
       // 销毁组件
+      this.destroyDOM();
       this.emit("destroy-component", false);
       return;
     }
     throw "组件重置失败";
   };
+
+  // 销毁截图容器
+  private destroyDOM() {
+    if (
+      this.screenShortController.value == null ||
+      this.toolController.value == null ||
+      this.optionIcoController?.value == null ||
+      this.optionController?.value == null ||
+      this.textInputController?.value == null
+    )
+      return;
+
+    document.body.removeChild(this.screenShortController.value);
+    document.body.removeChild(this.toolController.value);
+    document.body.removeChild(this.optionIcoController.value);
+    document.body.removeChild(this.optionController.value);
+    document.body.removeChild(this.textInputController.value);
+  }
 
   /**
    * 将指定区域的canvas转为图片
