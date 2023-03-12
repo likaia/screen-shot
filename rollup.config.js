@@ -97,6 +97,22 @@ const buildConfig = () => {
   return outputConfig;
 };
 
+const buildCopyTargetsConfig = () => {
+  const result = [
+    {
+      src: "src/assets/fonts/**",
+      dest: "dist/assets/fonts"
+    }
+  ];
+  if (useDevServer === "true") {
+    result.push({
+      src: "public/**",
+      dest: "dist"
+    });
+  }
+  return result;
+};
+
 export default {
   input: "src/main.ts",
   output: buildConfig(),
@@ -209,16 +225,7 @@ export default {
       : null,
     useDevServer === "true" ? livereload("dist") : null, //watch dist目录，当目录中的文件发生变化时，刷新页面
     copy({
-      targets: [
-        {
-          src: "src/assets/fonts/**",
-          dest: "dist/assets/fonts"
-        },
-        {
-          src: "public/**",
-          dest: "dist"
-        }
-      ]
+      targets: buildCopyTargetsConfig()
     }),
     delFile({ targets: "dist/*" })
   ]
