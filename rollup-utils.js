@@ -3,6 +3,7 @@ import { terser } from "rollup-plugin-terser";
 import visualizer from "rollup-plugin-visualizer";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
+import delFile from "rollup-plugin-delete";
 
 // 处理output对象中的format字段(传入的参数会与rollup所定义的参数不符，因此需要在这里进行转换)
 const buildFormat = formatVal => {
@@ -82,9 +83,11 @@ const enablePKGStats = (status = "false") => {
 };
 
 const enableDevServer = status => {
-  const serverConfig = [];
+  // 默认清空dist目录下的文件
+  let serverConfig = [delFile({ targets: "dist/*" })];
   if (status === "true") {
-    serverConfig.push(
+    // dev模式下不需要对dist目录进行清空
+    serverConfig = [
       serve({
         // 服务器启动的文件夹,访问此路径下的index.html文件
         contentBase: "dist",
@@ -92,7 +95,7 @@ const enableDevServer = status => {
       }),
       // watch dist目录，当目录中的文件发生变化时，刷新页面
       livereload("dist")
-    );
+    ];
   }
   return serverConfig;
 };

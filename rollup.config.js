@@ -2,7 +2,6 @@ import typescript from "rollup-plugin-typescript2";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
-import delFile from "rollup-plugin-delete";
 import postcss from "rollup-plugin-postcss";
 import vue from "rollup-plugin-vue";
 import autoprefixer from "autoprefixer";
@@ -150,7 +149,6 @@ export default {
     }),
     copy({
       targets: buildCopyTargetsConfig(useDevServer)
-    }),
-    delFile({ targets: "dist/*" })
+    })
   ]
 };
