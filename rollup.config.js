@@ -14,11 +14,13 @@ import postcssUrl from "postcss-url";
 import url from "@rollup/plugin-url";
 import cssnano from "cssnano";
 import yargs from "yargs";
-import { terser } from "rollup-plugin-terser";
-import visualizer from "rollup-plugin-visualizer";
+import {
+  buildConfig,
+  buildCopyTargetsConfig,
+  enableDevServer,
+  enablePKGStats
+} from "./rollup-utils";
 import progress from "rollup-plugin-progress";
-import serve from "rollup-plugin-serve";
-import livereload from "rollup-plugin-livereload";
 
 // 使用yargs解析命令行执行时的添加参数
 const commandLineParameters = yargs(process.argv.slice(1)).options({
@@ -45,77 +47,9 @@ const compressedState = commandLineParameters.compressedState;
 const showModulePKGInfo = commandLineParameters.showModulePKGInfo;
 const useDevServer = commandLineParameters.useDevServer;
 
-/**
- * 根据外部条件判断是否需要给对象添加属性
- * @param obj 对象名
- * @param condition 条件
- * @param propName 属性名
- * @param propValue 属性值
- */
-const addProperty = (obj, condition, propName, propValue) => {
-  // 条件成立则添加
-  if (condition) {
-    obj[propName] = propValue;
-  }
-};
-
-// 处理output对象中的format字段(传入的参数会与rollup所定义的参数不符，因此需要在这里进行转换)
-const buildFormat = formatVal => {
-  let finalFormatVal = formatVal;
-  switch (formatVal) {
-    case "esm":
-      finalFormatVal = "es";
-      break;
-    case "common":
-      finalFormatVal = "cjs";
-      break;
-    default:
-      break;
-  }
-  return finalFormatVal;
-};
-
-// 生成打包配置
-const buildConfig = () => {
-  const outputConfig = [];
-  for (let i = 0; i < packagingFormat.length; i++) {
-    const pkgFormat = packagingFormat[i];
-    // 根据packagingFormat字段来构建对应格式的包
-    const config = {
-      file: `dist/screenShotPlugin.${pkgFormat}.js`,
-      format: buildFormat(pkgFormat),
-      name: "screenShotPlugin",
-      globals: {
-        vue: "Vue"
-      }
-    };
-    // 是否需要对代码进行压缩
-    addProperty(config, compressedState === "true", "plugins", [terser()]);
-    addProperty(config, pkgFormat === "common", "exports", "named");
-    outputConfig.push(config);
-  }
-  return outputConfig;
-};
-
-const buildCopyTargetsConfig = () => {
-  const result = [
-    {
-      src: "src/assets/fonts/**",
-      dest: "dist/assets/fonts"
-    }
-  ];
-  if (useDevServer === "true") {
-    result.push({
-      src: "public/**",
-      dest: "dist"
-    });
-  }
-  return result;
-};
-
 export default {
   input: "src/main.ts",
-  output: buildConfig(),
+  output: buildConfig(packagingFormat, compressedState),
   external: ["vue"],
   // 警告处理钩子
   onwarn: function(warning, rollupWarn) {
@@ -127,6 +61,7 @@ export default {
         break;
       }
     }
+    // 错误警告中包含要忽略的key则退出函数
     if (warning.code === "UNKNOWN_OPTION" && matchingResult) {
       return;
     }
@@ -179,13 +114,13 @@ export default {
             }
           }
         ]),
-        //再次调用将css中引入的图片按照规则进行处理
+        // 再次调用将css中引入的图片按照规则进行处理
         postcssUrl([
           {
             basePath: path.resolve(__dirname, "src"),
             url: "inline",
             maxSize: 8, // 最大文件大小（单位为KB），超过该大小的文件将不会被编码为base64
-            fallback: "copy", // 如果文件大小超过最大大小，则使用'copy'选项复制文件
+            fallback: "copy", // 如果文件大小超过最大大小，则使用copy选项复制文件
             useHash: true, // 进行hash命名
             encodeType: "base64" // 指定编码类型为base64
           }
@@ -208,24 +143,13 @@ export default {
       babelHelpers: "bundled",
       bundled: "auto"
     }),
-    // 用于展示打包后的模块占用信息
-    showModulePKGInfo === "true"
-      ? visualizer({
-          filename: "dist/bundle-stats.html"
-        })
-      : "",
+    enablePKGStats(showModulePKGInfo),
+    ...enableDevServer(useDevServer),
     progress({
       format: "[:bar] :percent (:current/:total)"
     }),
-    useDevServer === "true"
-      ? serve({
-          contentBase: "dist", //服务器启动的文件夹,访问此路径下的index.html文件
-          port: 8123
-        })
-      : null,
-    useDevServer === "true" ? livereload("dist") : null, //watch dist目录，当目录中的文件发生变化时，刷新页面
     copy({
-      targets: buildCopyTargetsConfig()
+      targets: buildCopyTargetsConfig(useDevServer)
     }),
     delFile({ targets: "dist/*" })
   ]
