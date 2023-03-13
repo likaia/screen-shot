@@ -100,4 +100,23 @@ const enableDevServer = status => {
   return serverConfig;
 };
 
-export { buildConfig, buildCopyTargetsConfig, enablePKGStats, enableDevServer };
+const buildTSConfig = (useDevServer = "false") => {
+  return {
+    tsconfig: "tsconfig.json",
+    tsconfigOverride: {
+      compilerOptions: {
+        // dev模式下不生成.d.ts文件
+        declaration: useDevServer !== "true"
+      }
+    },
+    clean: true
+  };
+};
+
+export {
+  buildConfig,
+  buildCopyTargetsConfig,
+  enablePKGStats,
+  enableDevServer,
+  buildTSConfig
+};

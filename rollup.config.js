@@ -17,7 +17,8 @@ import {
   buildConfig,
   buildCopyTargetsConfig,
   enableDevServer,
-  enablePKGStats
+  enablePKGStats,
+  buildTSConfig
 } from "./rollup-utils";
 import progress from "rollup-plugin-progress";
 
@@ -84,10 +85,7 @@ export default {
     alias({
       entries: [{ find: "@", replacement: path.resolve(__dirname, "src") }]
     }),
-    typescript({
-      tsconfig: "tsconfig.json",
-      clean: true
-    }),
+    typescript(buildTSConfig(useDevServer)),
     // 此处用来处理外置css, 需要在入口文件中使用import来导入css文件
     postcss({
       // 内联css
