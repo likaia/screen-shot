@@ -68,6 +68,7 @@ export default {
     rollupWarn(warning);
   },
   plugins: [
+    nodeResolve(),
     vue({
       target: "browser",
       css: true,
@@ -80,7 +81,6 @@ export default {
         }
       }
     }),
-    nodeResolve(),
     commonjs(),
     alias({
       entries: [{ find: "@", replacement: path.resolve(__dirname, "src") }]
