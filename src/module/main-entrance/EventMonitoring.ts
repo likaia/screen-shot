@@ -5,7 +5,8 @@ import {
   movePositionType,
   zoomCutOutBoxReturnType,
   drawCutOutBoxReturnType,
-  positionInfoType
+  positionInfoType,
+  textInfoType
 } from "@/module/type/ComponentType";
 import { drawMasking } from "@/module/split-methods/DrawMasking";
 import html2canvas from "html2canvas";
@@ -29,6 +30,7 @@ import { setSelectedClassName } from "@/module/common-methords/SetSelectedClassN
 import adapter from "webrtc-adapter";
 import { getDrawBoundaryStatus } from "@/module/split-methods/BoundaryJudgment";
 import { getCanvas2dCtx } from "@/module/common-methords/CanvasPatch";
+import { updateContainerMouseStyle } from "@/module/common-methords/UpdateContainerMouseStyle";
 
 export default class EventMonitoring {
   // 当前实例的响应式data数据
@@ -111,6 +113,12 @@ export default class EventMonitoring {
   private textInputPosition: { mouseX: number; mouseY: number } = {
     mouseX: 0,
     mouseY: 0
+  };
+  private textInfo: textInfoType = {
+    positionX: 0,
+    positionY: 0,
+    color: "",
+    size: 0
   };
 
   constructor(props: Record<string, any>, context: SetupContext<any>) {
@@ -343,8 +351,6 @@ export default class EventMonitoring {
       this.screenShortController?.value &&
       this.screenShortCanvas
     ) {
-      // 修改鼠标样式
-      this.screenShortController.value.style.cursor = "text";
       // 显示文本输入区域
       this.data.setTextStatus(true);
       // 判断输入框位置是否变化
@@ -367,18 +373,29 @@ export default class EventMonitoring {
         // 保存绘制记录
         this.addHistory();
       }
-      // 计算文本框显示位置
-      const textMouseX = mouseX - 15;
-      const textMouseY = mouseY - 15;
       // 修改文本区域位置
-      this.textInputController.value.style.left = textMouseX + "px";
-      this.textInputController.value.style.top = textMouseY + "px";
+      this.textInputController.value.style.left = mouseX + "px";
+      this.textInputController.value.style.fontSize = this.fontSize + "px";
+      this.textInputController.value.style.color = this.data.getSelectedColor().value;
       setTimeout(() => {
         // 获取焦点
         if (this.textInputController?.value) {
+          // 获取输入框容器的高度
+          const containerHeight = this.textInputController.value.offsetHeight;
+          // 输入框容器y轴的位置需要在坐标的基础上再加上容器高度的一半，容器的位置就正好居中于光标
+          // canvas渲染的时候就不会出现位置不一致的问题了
+          const textMouseY = mouseY - Math.floor(containerHeight / 2);
+          this.textInputController.value.style.top = textMouseY + "px";
+          // 获取焦点
           this.textInputController.value.focus();
           // 记录当前输入框位置
           this.textInputPosition = { mouseX: mouseX, mouseY: mouseY };
+          this.textInfo = {
+            positionX: mouseX,
+            positionY: mouseY,
+            color: this.data.getSelectedColor().value,
+            size: this.fontSize
+          };
         }
       });
     }
@@ -696,7 +713,11 @@ export default class EventMonitoring {
           switch (this.cutOutBoxBorderArr[i].index) {
             case 1:
               if (this.data.getToolClickStatus().value) {
-                this.screenShortController.value.style.cursor = "crosshair";
+                // 修改截图容器内的鼠标样式
+                updateContainerMouseStyle(
+                  this.screenShortController.value,
+                  this.toolName
+                );
               } else {
                 this.screenShortController.value.style.cursor = "move";
               }
@@ -850,7 +871,25 @@ export default class EventMonitoring {
       this.data.setOptionStatus(false);
     }
     // 清空文本输入区域的内容并隐藏文本输入框
-    if (this.textInputController?.value != null && this.data.getTextStatus()) {
+    if (
+      this.textInputController?.value != null &&
+      this.data.getTextStatus() &&
+      this.screenShortCanvas
+    ) {
+      const text = this.textInputController.value.innerText;
+      if (text && text !== "") {
+        const { positionX, positionY, color, size } = this.textInfo;
+        drawText(
+          text,
+          positionX,
+          positionY,
+          color,
+          size,
+          this.screenShortCanvas
+        );
+        // 添加历史记录
+        this.addHistory();
+      }
       this.textInputController.value.innerHTML = "";
       this.data.setTextStatus(false);
     }

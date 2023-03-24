@@ -48,3 +48,10 @@ export type screenShotType = {
   enableCORS?: boolean; // html2canvas截图时跨域启用状态
   proxyAddress?: string; // html2canvas截图时的图片服务器代理地址
 };
+
+export type textInfoType = {
+  positionX: number;
+  positionY: number;
+  color: string;
+  size: number;
+};
