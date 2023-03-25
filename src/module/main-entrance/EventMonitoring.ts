@@ -1022,20 +1022,10 @@ export default class EventMonitoring {
 
   // 销毁截图容器
   private destroyDOM() {
-    if (
-      this.screenShortController.value == null ||
-      this.toolController.value == null ||
-      this.optionIcoController?.value == null ||
-      this.optionController?.value == null ||
-      this.textInputController?.value == null
-    )
-      return;
-
-    document.body.removeChild(this.screenShortController.value);
-    document.body.removeChild(this.toolController.value);
-    document.body.removeChild(this.optionIcoController.value);
-    document.body.removeChild(this.optionController.value);
-    document.body.removeChild(this.textInputController.value);
+    const screenShotPanel = document.getElementById("screenShotPanel");
+    if (screenShotPanel && screenShotPanel.parentNode === document.body) {
+      document.body.removeChild(screenShotPanel);
+    }
   }
 
   /**
