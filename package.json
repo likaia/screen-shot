@@ -35,7 +35,6 @@
   },
   "homepage": "https://github.com/likaia/screen-shot#readme",
   "dependencies": {
-    "@types/lodash": "^4.14.161",
     "html2canvas": "^1.4.1",
     "webrtc-adapter": "^7.7.0"
   },

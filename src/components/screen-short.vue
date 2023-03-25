@@ -115,7 +115,6 @@ import eventMonitoring from "@/module/main-entrance/EventMonitoring";
 import { getColor } from "@/module/common-methords/GetColor";
 import { selectColor } from "@/module/common-methords/SelectColor";
 import { SetupContext } from "@vue/runtime-core";
-import _ from "lodash";
 import { setBrushSize } from "@/module/common-methords/SetBrushSize";
 import toolbar from "@/module/config/Toolbar";
 
@@ -173,10 +172,10 @@ export default {
   emits: {
     // vue3中建议对所有emit事件进行验证
     "destroy-component": (status: boolean) => {
-      return !_.isNull(status);
+      return status != null;
     },
     "get-image-data": (base64: string) => {
-      return !_.isNull(base64);
+      return base64 != null;
     }
   }
 };
