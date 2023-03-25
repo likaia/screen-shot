@@ -376,6 +376,7 @@ export default class EventMonitoring {
       // 修改文本区域位置
       this.textInputController.value.style.left = mouseX + "px";
       this.textInputController.value.style.fontSize = this.fontSize + "px";
+      this.textInputController.value.style.fontFamily = "none";
       this.textInputController.value.style.color = this.data.getSelectedColor().value;
       setTimeout(() => {
         // 获取焦点
