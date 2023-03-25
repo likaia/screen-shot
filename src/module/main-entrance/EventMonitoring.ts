@@ -624,14 +624,18 @@ export default class EventMonitoring {
       // 显示截图工具栏
       this.data.setToolStatus(true);
       nextTick().then(() => {
-        if (this.toolController.value != null) {
+        if (
+          this.toolController.value != null &&
+          this.screenShortController.value
+        ) {
           // 计算截图工具栏位置
           const toolLocation = calculateToolLocation(
             this.drawGraphPosition,
-            this.toolController.value?.offsetWidth
+            this.toolController.value?.offsetWidth,
+            this.screenShortController.value.width / this.dpr
           );
           // 当前截取的是全屏，则修改工具栏的位置到截图容器最底部，防止超出
-          if (this.getFullScreenStatus && this.screenShortController.value) {
+          if (this.getFullScreenStatus) {
             const containerHeight = parseInt(
               this.screenShortController.value.style.height
             );
@@ -655,7 +659,11 @@ export default class EventMonitoring {
 
               // 超出屏幕顶部时
               if (toolLocation.mouseY < 0) {
-                toolLocation.mouseY += 64;
+                const containerHeight = parseInt(
+                  this.screenShortController.value.style.height
+                );
+                toolLocation.mouseY =
+                  containerHeight - this.fullScreenDiffHeight;
               }
             }
           }
@@ -765,17 +773,33 @@ export default class EventMonitoring {
       // 当前操作节点为1时则为移动裁剪框
       if (this.borderOption === 1) {
         // 计算要移动的x轴坐标
-        const x = fixedData(
+        let x = fixedData(
           currentX - (moveStartX - startX),
           width,
           this.screenShortController.value.width
         );
         // 计算要移动的y轴坐标
-        const y = fixedData(
+        let y = fixedData(
           currentY - (moveStartY - startY),
           height,
           this.screenShortController.value.height
         );
+        // 计算画布面积
+        const containerWidth =
+          this.screenShortController.value.width / this.dpr;
+        const containerHeight =
+          this.screenShortController.value.height / this.dpr;
+        // 计算裁剪框在画布上所占的面积
+        const cutOutBoxSizeX = x + width;
+        const cutOutBoxSizeY = y + height;
+        // 超出画布的可视区域，进行位置修正
+        if (cutOutBoxSizeX > containerWidth) {
+          x = containerWidth - width;
+        }
+        if (cutOutBoxSizeY > containerHeight) {
+          y = containerHeight - height;
+        }
+
         // 重新绘制裁剪框
         this.tempGraphPosition = drawCutOutBox(
           x,
