@@ -49,7 +49,13 @@ const buildConfig = (packagingFormat = [], compressedState = "false") => {
       }
     };
     // 是否需要对代码进行压缩
-    addProperty(config, compressedState === "true", "plugins", [terser()]);
+    addProperty(config, compressedState === "true", "plugins", [
+      terser({
+        output: {
+          comments: false // 删除注释
+        }
+      })
+    ]);
     addProperty(config, pkgFormat === "common", "exports", "named");
     outputConfig.push(config);
   }

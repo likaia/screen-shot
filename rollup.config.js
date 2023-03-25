@@ -75,6 +75,9 @@ export default {
       // 把组件转换成 render 函数
       compileTemplate: true,
       preprocessStyles: true,
+      compilerOptions: {
+        comments: false // 删除注释
+      },
       preprocessOptions: {
         scss: {
           includePaths: ["src/assets/scss"]
