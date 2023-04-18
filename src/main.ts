@@ -29,6 +29,9 @@ export default {
     if (options?.proxyAddress) {
       plugInParameters.setProxyAddress(options.proxyAddress);
     }
+    if (options?.writeBase64 != null) {
+      plugInParameters.setWriteImgState(options.writeBase64);
+    }
     // 将截屏组件挂载到vue实例
     app.component(screenShort.name, screenShort);
   }

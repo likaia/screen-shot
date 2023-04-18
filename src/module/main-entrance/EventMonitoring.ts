@@ -1032,6 +1032,7 @@ export default class EventMonitoring {
    * @private
    */
   private getCanvasImgData = (isSave: boolean) => {
+    const plugInParameters = new PlugInParameters();
     // 获取裁剪区域位置信息
     const { startX, startY, width, height } = this.data.getCutOutBoxPosition();
     let base64 = "";
@@ -1053,7 +1054,9 @@ export default class EventMonitoring {
           startX,
           startY,
           width,
-          height
+          height,
+          0.75,
+          plugInParameters.getWriteImgState()
         );
       }
     }

@@ -77,6 +77,7 @@ export default defineComponent({
 * `hiddenToolIco` 需要隐藏的截图工具栏图标，值为`{ save?: boolean; undo?: boolean; confirm?: boolean }`类型，默认为`{}`。传你需要隐藏的图标名称，将值设为`true`即可。
 * `enableCORS` html2canvas截图模式下跨域的启用状态,值为`boolean`类型，默认为`false`
 * `proxyAddress`  html2canvas截图模式下的图片服务器代理地址,值为`string`类型，默认为`undefined`
+* `writeBase64` 是否将截图内容写入剪切板，值为`boolean`类型，默认为`true`
 
 ## 写在最后
 至此，插件的所有使用方法就介绍完了。

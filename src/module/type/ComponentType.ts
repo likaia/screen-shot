@@ -47,6 +47,7 @@ export type screenShotType = {
   hiddenToolIco?: toolIcoType; // 需要隐藏的工具栏图标
   enableCORS?: boolean; // html2canvas截图时跨域启用状态
   proxyAddress?: string; // html2canvas截图时的图片服务器代理地址
+  writeBase64?: boolean; // 是否将截图内容写入剪切板
 };
 
 export type textInfoType = {

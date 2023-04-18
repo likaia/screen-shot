@@ -1,6 +1,7 @@
 import { toolIcoType } from "@/module/type/ComponentType";
 
 let enableWebRtc = true;
+let writeBase64 = true;
 
 // 数据初始化标识
 let initStatus = false;
@@ -18,6 +19,7 @@ export default class PlugInParameters {
     // 标识为true时则初始化数据
     if (initStatus) {
       enableWebRtc = true;
+      writeBase64 = true;
       // 初始化完成设置其值为false
       initStatus = false;
       level = 0;
@@ -82,5 +84,13 @@ export default class PlugInParameters {
 
   public setProxyAddress(address: string) {
     proxyAddress = address;
+  }
+
+  // 设置截图数据的写入状态
+  public setWriteImgState(state: boolean) {
+    writeBase64 = state;
+  }
+  public getWriteImgState() {
+    return writeBase64;
   }
 }
