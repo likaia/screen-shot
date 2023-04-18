@@ -19,7 +19,6 @@ import InitData from "@/module/main-entrance/InitData";
 import { calculateToolLocation } from "@/module/split-methods/CalculateToolLocation";
 import { drawRectangle } from "@/module/split-methods/DrawRectangle";
 import { drawCircle } from "@/module/split-methods/DrawCircle";
-import { drawLineArrow } from "@/module/split-methods/DrawLineArrow";
 import { drawPencil, initPencil } from "@/module/split-methods/DrawPencil";
 import { drawText } from "@/module/split-methods/DrawText";
 import { saveCanvasToImage } from "@/module/common-methords/SaveCanvasToImage";
@@ -31,6 +30,7 @@ import adapter from "webrtc-adapter";
 import { getDrawBoundaryStatus } from "@/module/split-methods/BoundaryJudgment";
 import { getCanvas2dCtx } from "@/module/common-methords/CanvasPatch";
 import { updateContainerMouseStyle } from "@/module/common-methords/UpdateContainerMouseStyle";
+import { DrawArrow } from "@/module/split-methods/DrawArrow";
 
 export default class EventMonitoring {
   // 当前实例的响应式data数据
@@ -72,6 +72,8 @@ export default class EventMonitoring {
   private borderSize = 10;
   // 当前操作的边框节点
   private borderOption: number | null = null;
+  // 递增变粗箭头的实现
+  private drawArrow = new DrawArrow();
 
   // 点击裁剪框时的鼠标坐标
   private movePosition: movePositionType = {
@@ -485,15 +487,12 @@ export default class EventMonitoring {
           );
           break;
         case "right-top":
-          drawLineArrow(
+          this.drawArrow.draw(
             this.screenShortCanvas,
             startX,
             startY,
             currentX,
             currentY,
-            30,
-            10,
-            this.data.getPenSize().value,
             this.data.getSelectedColor().value
           );
           break;
