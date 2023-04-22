@@ -1,4 +1,4 @@
-# vue-web-screen-shot · [![npm](https://img.shields.io/badge/npm-v1.4.8-2081C1)](https://www.npmjs.com/package/vue-web-screen-shot) [![yarn](https://img.shields.io/badge/yarn-v1.4.8-F37E42)](https://yarnpkg.com/package/vue-web-screen-shot) [![github](https://img.shields.io/badge/GitHub-depositary-9A9A9A)](https://github.com/likaia/screen-shot) [![](https://img.shields.io/github/issues/likaia/screen-shot)](https://github.com/likaia/screen-shot/issues) [![](	https://img.shields.io/github/forks/likaia/screen-shot)](https://github.com/likaia/screen-shot/network/members) [![](	https://img.shields.io/github/stars/likaia/screen-shot)](https://github.com/likaia/screen-shot/stargazers)
+# vue-web-screen-shot · [![npm](https://img.shields.io/badge/npm-v1.4.9-2081C1)](https://www.npmjs.com/package/vue-web-screen-shot) [![yarn](https://img.shields.io/badge/yarn-v1.4.9-F37E42)](https://yarnpkg.com/package/vue-web-screen-shot) [![github](https://img.shields.io/badge/GitHub-depositary-9A9A9A)](https://github.com/likaia/screen-shot) [![](https://img.shields.io/github/issues/likaia/screen-shot)](https://github.com/likaia/screen-shot/issues) [![](	https://img.shields.io/github/forks/likaia/screen-shot)](https://github.com/likaia/screen-shot/network/members) [![](	https://img.shields.io/github/stars/likaia/screen-shot)](https://github.com/likaia/screen-shot/stargazers)
 web端自定义截屏插件(Vue3版)，运行视频：[实现web端自定义截屏功能](https://www.bilibili.com/video/BV1Ey4y127cV) , 本插件仅支持Vue3,如需在其他平台使用请移步 ：[js-web-screen-shot](https://www.npmjs.com/package/js-web-screen-shot) 效果图如下：
 ![截屏效果图](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/486d810877a24582aa8cf110e643c138~tplv-k3u1fbpfcp-watermark.image)
 
@@ -78,6 +78,11 @@ export default defineComponent({
 * `enableCORS` html2canvas截图模式下跨域的启用状态,值为`boolean`类型，默认为`false`
 * `proxyAddress`  html2canvas截图模式下的图片服务器代理地址,值为`string`类型，默认为`undefined`
 * `writeBase64` 是否将截图内容写入剪切板，值为`boolean`类型，默认为`true`
+* `hiddenScrollBar` 是否隐藏滚动条，用webrtc模式截图时chrome 112版本的浏览器在部分系统下会挤压出现滚动条，如果出现你可以尝试通过此参数来进行修复。值为`Object`类型，有4个属性：
+  * state: boolean; 启用状态, 默认为`false`
+  * color?: string; 填充层颜色，滚动条隐藏后可能会出现空缺，需要进行填充，默认填充色为黑色。
+  * fillWidth?: number; 填充层宽度，默认为截图容器的宽度
+  * fillHeight?: number; 填充层高度，默认为空缺区域的高度
 
 ## 写在最后
 至此，插件的所有使用方法就介绍完了。
