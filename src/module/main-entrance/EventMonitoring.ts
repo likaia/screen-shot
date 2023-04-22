@@ -6,7 +6,8 @@ import {
   zoomCutOutBoxReturnType,
   drawCutOutBoxReturnType,
   positionInfoType,
-  textInfoType
+  textInfoType,
+  hideBarInfoType
 } from "@/module/type/ComponentType";
 import { drawMasking } from "@/module/split-methods/DrawMasking";
 import html2canvas from "html2canvas";
@@ -116,6 +117,13 @@ export default class EventMonitoring {
     mouseX: 0,
     mouseY: 0
   };
+  // 是否隐藏页面滚动条
+  private hiddenScrollBar = {
+    color: "#000000",
+    state: false,
+    fillWidth: 0,
+    fillHeight: 0
+  };
   private textInfo: textInfoType = {
     positionX: 0,
     positionY: 0,
@@ -141,145 +149,149 @@ export default class EventMonitoring {
     onMounted(() => {
       this.emit = this.data.getEmit();
       const plugInParameters = new PlugInParameters();
+      this.hiddenScrollBar = plugInParameters.getHiddenScrollBarInfo();
+      if (this.hiddenScrollBar.state) {
+        // 设置页面宽高并隐藏滚动条
+        this.updateScrollbarState();
+      }
       // 单击截屏启用状态
       this.clickCutFullScreen = plugInParameters.getClickCutFullScreenStatus();
       // 设置需要隐藏的工具栏图标
       this.data.setHiddenToolIco(plugInParameters.getHiddenToolIco());
-      if (this.screenShortImageController == null) return;
-      const viewSize = {
-        width: parseFloat(window.getComputedStyle(document.body).width),
-        height: parseFloat(window.getComputedStyle(document.body).height)
-      };
-      // 设置截图图片存放容器宽高
-      this.screenShortImageController.width = viewSize.width;
-      this.screenShortImageController.height = viewSize.height;
-      // 获取截图区域画canvas容器画布
-      if (this.screenShortController.value == null) return;
-      const canvasContext = getCanvas2dCtx(
-        this.screenShortController.value,
-        this.screenShortImageController.width,
-        this.screenShortImageController.height
-      );
-      if (canvasContext == null) return;
       if (!plugInParameters.getWebRtcStatus()) {
-        // html2canvas截屏
-        html2canvas(document.body, {
-          useCORS: plugInParameters.getEnableCORSStatus(),
-          proxy: plugInParameters.getProxyAddress()
-        }).then(canvas => {
-          // 装载截图的dom为null则退出
-          if (this.screenShortController.value == null) return;
-
-          // 调整截屏容器层级
-          this.screenShortController.value.style.zIndex =
-            plugInParameters.getLevel() + "";
-          // 调整截图工具栏层级
-          if (this.toolController.value == null) return;
-          this.toolController.value.style.zIndex = `${plugInParameters.getLevel() +
-            1}`;
-
-          // 存放html2canvas截取的内容
-          this.screenShortImageController = canvas;
-          // 存储屏幕截图
-          this.data.setScreenShortImageController(canvas);
-
-          // 赋值截图区域canvas画布
-          this.screenShortCanvas = canvasContext;
-          // 绘制蒙层
-          drawMasking(
-            canvasContext,
-            this.screenShortController.value.width,
-            this.screenShortController.value.height
-          );
-
-          // 添加监听
-          this.screenShortController.value?.addEventListener(
-            "mousedown",
-            this.mouseDownEvent
-          );
-          this.screenShortController.value?.addEventListener(
-            "mousemove",
-            this.mouseMoveEvent
-          );
-          this.screenShortController.value?.addEventListener(
-            "mouseup",
-            this.mouseUpEvent
-          );
-        });
+        this.h2cMode(plugInParameters);
         return;
       }
-      // 开始捕捉屏幕
-      this.startCapture().then(() => {
-        setTimeout(() => {
-          // 装载截图的dom为null则退出
-          if (this.screenShortController.value == null) return;
-          if (this.screenShortImageController == null) return;
-          const containerWidth = this.screenShortImageController?.width;
-          const containerHeight = this.screenShortImageController?.height;
-          // 将获取到的屏幕截图绘制到图片容器里
-          const imgContext = getCanvas2dCtx(
-            this.screenShortImageController,
-            containerWidth,
-            containerHeight
-          );
-          // 将获取到的屏幕截图绘制到图片容器里
-          const { videoWidth, videoHeight } = this.videoController;
-          let fixWidth = containerWidth;
-          let fixHeight = (videoHeight * containerWidth) / videoWidth;
-          if (fixHeight > containerHeight) {
-            fixWidth = (containerWidth * containerHeight) / fixHeight;
-            fixHeight = containerHeight;
-          }
-          imgContext?.drawImage(
-            this.videoController,
-            0,
-            0,
-            fixWidth,
-            fixHeight
-          );
-          // 存储屏幕截图
-          this.data.setScreenShortImageController(
-            this.screenShortImageController
-          );
-
-          // 赋值截图区域canvas画布
-          this.screenShortCanvas = canvasContext;
-          // 绘制蒙层
-          drawMasking(
-            canvasContext,
-            this.screenShortController.value.width,
-            this.screenShortController.value.height
-          );
-
-          // 添加监听
-          this.screenShortController.value?.addEventListener(
-            "mousedown",
-            this.mouseDownEvent
-          );
-          this.screenShortController.value?.addEventListener(
-            "mousemove",
-            this.mouseMoveEvent
-          );
-          this.screenShortController.value?.addEventListener(
-            "mouseup",
-            this.mouseUpEvent
-          );
-          // 停止捕捉屏幕
-          this.stopCapture();
-          // 调整截屏容器层级
-          this.screenShortController.value.style.zIndex =
-            plugInParameters.getLevel() + "";
-          // 调整截图工具栏层级
-          if (this.toolController.value == null) return;
-          this.toolController.value.style.zIndex = `${plugInParameters.getLevel() +
-            1}`;
-        }, 500);
-      });
+      this.wrcMode(plugInParameters);
     });
 
     onUnmounted(() => {
       // 初始化initData中的数据
       this.data.setInitStatus(true);
+    });
+  }
+
+  private wrcMode(plugInParameters: PlugInParameters) {
+    if (this.screenShortImageController == null) return;
+    // 设置截图图片存放容器宽高
+    this.screenShortImageController.width = parseFloat(
+      window.getComputedStyle(document.body).width
+    );
+    this.screenShortImageController.height = parseFloat(
+      window.getComputedStyle(document.body).height
+    );
+    this.startCapture().then(() => {
+      setTimeout(() => {
+        if (
+          this.screenShortController.value == null ||
+          this.screenShortImageController == null
+        ) {
+          return;
+        }
+        const containerWidth = this.screenShortImageController?.width;
+        const containerHeight = this.screenShortImageController?.height;
+        // 修正截图容器尺寸
+        const context = getCanvas2dCtx(
+          this.screenShortController.value,
+          containerWidth,
+          containerHeight
+        );
+        if (context == null) return;
+        // 修正图像容器画布尺寸并返回
+        const imgContext = getCanvas2dCtx(
+          this.screenShortImageController,
+          containerWidth,
+          containerHeight
+        );
+        // 获取视频容器的宽高，对宽高进行等比例修复
+        const { videoWidth, videoHeight } = this.videoController;
+        console.log("视频流尺寸", videoWidth, videoHeight);
+        let fixWidth = containerWidth;
+        let fixHeight = (videoHeight * containerWidth) / videoWidth;
+        if (fixHeight > containerHeight) {
+          fixWidth = (containerWidth * containerHeight) / fixHeight;
+          fixHeight = containerHeight;
+        }
+        // 将获取到的屏幕流绘制到图片容器里
+        imgContext?.drawImage(this.videoController, 0, 0, fixWidth, fixHeight);
+        if (imgContext == null) return;
+        // 隐藏滚动条会出现部分内容未截取到，需要进行修复
+        const diffHeight = containerHeight - fixHeight;
+        if (this.hiddenScrollBar.state && diffHeight > 0) {
+          // 填充容器的剩余部分
+          imgContext.beginPath();
+          let fillWidth = containerWidth;
+          let fillHeight = diffHeight;
+          if (this.hiddenScrollBar.fillWidth > 0) {
+            fillWidth = this.hiddenScrollBar.fillWidth;
+          }
+          if (this.hiddenScrollBar.fillHeight > 0) {
+            fillHeight = this.hiddenScrollBar.fillHeight;
+          }
+          imgContext.rect(0, fixHeight, fillWidth, fillHeight);
+          imgContext.fillStyle = this.hiddenScrollBar.color;
+          imgContext.fill();
+        }
+
+        // 存储屏幕截图
+        this.data.setScreenShortImageController(
+          this.screenShortImageController
+        );
+
+        // 将屏幕截图绘制到截图容器中
+        this.drawContent(context, this.screenShortController.value);
+
+        // 调整截屏容器层级
+        this.screenShortController.value.style.zIndex =
+          plugInParameters.getLevel() + "";
+        // 调整截图工具栏层级
+        if (this.toolController.value == null) return;
+        this.toolController.value.style.zIndex = `${plugInParameters.getLevel() +
+          1}`;
+        // 停止捕捉屏幕
+        this.stopCapture();
+      }, 500);
+    });
+  }
+
+  private h2cMode(plugInParameters: PlugInParameters) {
+    if (this.screenShortImageController == null) return;
+    const viewSize = {
+      width: parseFloat(window.getComputedStyle(document.body).width),
+      height: parseFloat(window.getComputedStyle(document.body).height)
+    };
+    // 设置截图图片存放容器宽高
+    this.screenShortImageController.width = viewSize.width;
+    this.screenShortImageController.height = viewSize.height;
+    // 获取截图区域画canvas容器画布
+    if (this.screenShortController.value == null) return;
+    const canvasContext = getCanvas2dCtx(
+      this.screenShortController.value,
+      this.screenShortImageController.width,
+      this.screenShortImageController.height
+    );
+    if (canvasContext == null) return;
+    html2canvas(document.body, {
+      useCORS: plugInParameters.getEnableCORSStatus(),
+      proxy: plugInParameters.getProxyAddress()
+    }).then(canvas => {
+      // 装载截图的dom为null则退出
+      if (this.screenShortController.value == null) return;
+
+      // 调整截屏容器层级
+      this.screenShortController.value.style.zIndex =
+        plugInParameters.getLevel() + "";
+      // 调整截图工具栏层级
+      if (this.toolController.value == null) return;
+      this.toolController.value.style.zIndex = `${plugInParameters.getLevel() +
+        1}`;
+
+      // 存放html2canvas截取的内容
+      this.screenShortImageController = canvas;
+      // 存储屏幕截图
+      this.data.setScreenShortImageController(canvas);
+      // 将屏幕截图绘制到截图容器中
+      this.drawContent(canvasContext, this.screenShortController.value);
     });
   }
 
@@ -302,6 +314,11 @@ export default class EventMonitoring {
         // @ts-ignore
         preferCurrentTab: true
       });
+      console.log(
+        "截图容器的尺寸",
+        this.screenShortImageController.width,
+        this.screenShortImageController.height
+      );
       // 将MediaStream输出至video标签
       this.videoController.srcObject = captureStream;
     } catch (err) {
@@ -325,6 +342,25 @@ export default class EventMonitoring {
       this.videoController.srcObject = null;
     }
   };
+
+  private drawContent(
+    canvasContext: CanvasRenderingContext2D,
+    screenShortController: HTMLCanvasElement
+  ) {
+    // 赋值截图区域canvas画布
+    this.screenShortCanvas = canvasContext;
+    // 绘制蒙层
+    drawMasking(
+      canvasContext,
+      screenShortController.width,
+      screenShortController.height
+    );
+
+    // 添加监听
+    screenShortController.addEventListener("mousedown", this.mouseDownEvent);
+    screenShortController.addEventListener("mousemove", this.mouseMoveEvent);
+    screenShortController.addEventListener("mouseup", this.mouseUpEvent);
+  }
 
   // 鼠标按下事件
   private mouseDownEvent = (event: MouseEvent) => {
@@ -1013,6 +1049,10 @@ export default class EventMonitoring {
       this.data.setInitStatus(true);
       // 销毁组件
       this.destroyDOM();
+      // 还原滚动条状态
+      if (this.hiddenScrollBar.state) {
+        this.updateScrollbarState(false);
+      }
       this.emit("destroy-component", false);
       return;
     }
@@ -1025,6 +1065,18 @@ export default class EventMonitoring {
     if (screenShotPanel && screenShotPanel.parentNode === document.body) {
       document.body.removeChild(screenShotPanel);
     }
+  }
+
+  private updateScrollbarState(state = true) {
+    // 隐藏滚动条
+    if (state) {
+      document.documentElement.classList.add("hidden-screen-shot-scroll");
+      document.body.classList.add("hidden-screen-shot-scroll");
+      return;
+    }
+    // 还原滚动条状态
+    document.documentElement.classList.remove("hidden-screen-shot-scroll");
+    document.body.classList.remove("hidden-screen-shot-scroll");
   }
 
   /**

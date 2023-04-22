@@ -48,6 +48,8 @@ export type screenShotType = {
   enableCORS?: boolean; // html2canvas截图时跨域启用状态
   proxyAddress?: string; // html2canvas截图时的图片服务器代理地址
   writeBase64?: boolean; // 是否将截图内容写入剪切板
+  // 是否隐藏滚动条
+  hiddenScrollBar?: hideBarInfoType;
 };
 
 export type textInfoType = {
@@ -55,4 +57,11 @@ export type textInfoType = {
   positionY: number;
   color: string;
   size: number;
+};
+
+export type hideBarInfoType = {
+  state: boolean;
+  color?: string;
+  fillWidth?: number;
+  fillHeight?: number;
 };

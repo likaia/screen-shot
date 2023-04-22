@@ -2,6 +2,7 @@ import { App } from "vue";
 import screenShort from "@/components/screen-short.vue";
 import PlugInParameters from "@/module/main-entrance/PlugInParameters";
 import { screenShotType } from "@/module/type/ComponentType";
+import "@/assets/scss/global.scss";
 
 export default {
   install(app: App, options: screenShotType): void {
@@ -32,6 +33,10 @@ export default {
     if (options?.writeBase64 != null) {
       plugInParameters.setWriteImgState(options.writeBase64);
     }
+    if (options?.hiddenScrollBar != null) {
+      plugInParameters.setHiddenScrollBarInfo(options.hiddenScrollBar);
+    }
+
     // 将截屏组件挂载到vue实例
     app.component(screenShort.name, screenShort);
   }

@@ -9,7 +9,6 @@ export function drawMasking(
   canvasWidth: number,
   canvasHeight: number
 ) {
-  console.log(canvasWidth, canvasHeight);
   // 清除画布
   context.clearRect(0, 0, canvasWidth, canvasHeight);
   // 绘制蒙层

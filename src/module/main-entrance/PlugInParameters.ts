@@ -1,7 +1,13 @@
-import { toolIcoType } from "@/module/type/ComponentType";
+import { hideBarInfoType, toolIcoType } from "@/module/type/ComponentType";
 
 let enableWebRtc = true;
 let writeBase64 = true;
+let hiddenScrollBar = {
+  color: "#000000",
+  state: false,
+  fillWidth: 0,
+  fillHeight: 0
+};
 
 // 数据初始化标识
 let initStatus = false;
@@ -92,5 +98,19 @@ export default class PlugInParameters {
   }
   public getWriteImgState() {
     return writeBase64;
+  }
+
+  public setHiddenScrollBarInfo(info: hideBarInfoType) {
+    const { state, color, fillWidth, fillHeight } = info;
+    hiddenScrollBar = {
+      state,
+      color: color ? color : "#000000",
+      fillWidth: fillWidth ? fillWidth : 0,
+      fillHeight: fillHeight ? fillHeight : 0
+    };
+  }
+
+  public getHiddenScrollBarInfo() {
+    return hiddenScrollBar;
   }
 }
