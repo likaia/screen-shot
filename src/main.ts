@@ -36,6 +36,9 @@ export default {
     if (options?.hiddenScrollBar != null) {
       plugInParameters.setHiddenScrollBarInfo(options.hiddenScrollBar);
     }
+    if (options?.wrcWindowMode != null) {
+      plugInParameters.setWrcWindowMode(options.wrcWindowMode);
+    }
 
     // 将截屏组件挂载到vue实例
     app.component(screenShort.name, screenShort);

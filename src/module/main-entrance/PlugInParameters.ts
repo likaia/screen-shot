@@ -6,7 +6,8 @@ let hiddenScrollBar = {
   color: "#000000",
   state: false,
   fillWidth: 0,
-  fillHeight: 0
+  fillHeight: 0,
+  fillState: false
 };
 
 // 数据初始化标识
@@ -19,13 +20,14 @@ let hiddenToolIco: toolIcoType = {};
 // html2canvas模式是否启用跨域图片加载模式
 let enableCORS = false;
 let proxyAddress: string | undefined = undefined;
-
+let wrcWindowMode = false;
 export default class PlugInParameters {
   constructor() {
     // 标识为true时则初始化数据
     if (initStatus) {
       enableWebRtc = true;
       writeBase64 = true;
+      wrcWindowMode = false;
       // 初始化完成设置其值为false
       initStatus = false;
       level = 0;
@@ -101,16 +103,25 @@ export default class PlugInParameters {
   }
 
   public setHiddenScrollBarInfo(info: hideBarInfoType) {
-    const { state, color, fillWidth, fillHeight } = info;
+    const { state, color, fillWidth, fillHeight, fillState } = info;
     hiddenScrollBar = {
       state,
       color: color ? color : "#000000",
       fillWidth: fillWidth ? fillWidth : 0,
-      fillHeight: fillHeight ? fillHeight : 0
+      fillHeight: fillHeight ? fillHeight : 0,
+      fillState: fillState ? fillState : false
     };
   }
 
   public getHiddenScrollBarInfo() {
     return hiddenScrollBar;
+  }
+
+  public setWrcWindowMode(state: boolean) {
+    wrcWindowMode = state;
+  }
+
+  public getWrcWindowMode() {
+    return wrcWindowMode;
   }
 }
