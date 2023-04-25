@@ -87,6 +87,8 @@ export default class EventMonitoring {
   private draggingTrim = false;
   // 裁剪框拖拽状态
   private dragging = false;
+  // 鼠标是否在裁剪框内
+  private mouseInsideCropBox = false;
 
   // 鼠标点击状态
   private clickFlag = false;
@@ -403,6 +405,8 @@ export default class EventMonitoring {
 
   // 鼠标按下事件
   private mouseDownEvent = (event: MouseEvent) => {
+    // 非鼠标左键按下则终止
+    if (event.button != 0) return;
     // 当前操作的是撤销
     if (this.toolName == "undo") return;
     this.dragging = true;
@@ -428,6 +432,9 @@ export default class EventMonitoring {
       this.screenShortController?.value &&
       this.screenShortCanvas
     ) {
+      if (!this.mouseInsideCropBox) {
+        return;
+      }
       // 显示文本输入区域
       this.data.setTextStatus(true);
       // 判断输入框位置是否变化
@@ -869,6 +876,7 @@ export default class EventMonitoring {
         }
       }
       context.closePath();
+      this.mouseInsideCropBox = flag;
       if (!flag) {
         // 鼠标移出裁剪框重置鼠标样式
         this.screenShortController.value.style.cursor = "default";
