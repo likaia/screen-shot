@@ -6,8 +6,7 @@ import {
   zoomCutOutBoxReturnType,
   drawCutOutBoxReturnType,
   positionInfoType,
-  textInfoType,
-  hideBarInfoType
+  textInfoType
 } from "@/module/type/ComponentType";
 import { drawMasking } from "@/module/split-methods/DrawMasking";
 import html2canvas from "html2canvas";
@@ -365,6 +364,9 @@ export default class EventMonitoring {
     } catch (err) {
       // 销毁组件
       this.resetComponent();
+      if (this.emit) {
+        this.emit("webrtc-error", err);
+      }
       throw "浏览器不支持webrtc或者用户未授权, 浏览器名称" +
         adapter.browserDetails.browser +
         "，浏览器版本号" +

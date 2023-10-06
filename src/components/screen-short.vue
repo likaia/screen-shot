@@ -176,6 +176,9 @@ export default {
     },
     "get-image-data": (base64: string) => {
       return base64 != null;
+    },
+    "webrtc-error": (errMsg: string) => {
+      return errMsg != null;
     }
   }
 };

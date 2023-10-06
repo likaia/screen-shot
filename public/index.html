@@ -45,6 +45,9 @@
           const getImg = (base64)=>{
             console.log(base64);
           }
+          const handleErr = (err)=> {
+            console.log("屏幕流获取失败", err);
+          }
           const modifyState = (state)=>{
             showState.value = state
             console.log(showState.value);
@@ -53,7 +56,8 @@
             showState,
             destroyComponent,
             getImg,
-            modifyState
+            modifyState,
+            handleErr
           }
         }
       }
@@ -76,6 +80,7 @@
                 :key="new Date().getTime()"
                 @destroy-component="destroyComponent"
                 @get-image-data="getImg"
+                @webrtc-error="handleErr"
   >
   </screen-short>
 
